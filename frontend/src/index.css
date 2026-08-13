@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 4%;
+        --foreground: 0 0% 96%;
+        --card: 0 0% 7%;
+        --card-foreground: 0 0% 96%;
+        --popover: 0 0% 7%;
+        --popover-foreground: 0 0% 96%;
+        --primary: 24 100% 41%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 10%;
+        --secondary-foreground: 0 0% 96%;
+        --muted: 0 0% 10%;
+        --muted-foreground: 240 4% 65%;
+        --accent: 24 100% 41%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+        --ring: 24 100% 41%;
+        --radius: 0.25rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    html {
+        scroll-behavior: auto;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-family: 'Manrope', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+    }
+    ::selection {
+        background: #D35400;
+        color: #F5F5F5;
+    }
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0A0A0A;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #27272A;
+        border: 2px solid #0A0A0A;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #D35400;
+    }
+}
+
+@layer components {
+    .font-display {
+        font-family: 'Bebas Neue', sans-serif;
+    }
+    .font-editorial {
+        font-family: 'Cormorant Garamond', serif;
+    }
+    .mono-label {
+        font-family: 'IBM Plex Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.28em;
+        font-size: 0.6875rem;
+        font-weight: 500;
+    }
+    .text-stroke {
+        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.22);
+        color: transparent;
+    }
+    .text-stroke-accent {
+        -webkit-text-stroke: 1px rgba(211, 84, 0, 0.55);
+        color: transparent;
+    }
+    .noise-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        pointer-events: none;
+        opacity: 0.04;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .spotlight-frame::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse 90% 70% at 50% 32%, transparent 25%, rgba(5, 5, 5, 0.82) 100%);
+        transition: opacity 0.6s ease;
+    }
+    .spotlight-frame:hover::after {
+        opacity: 0.55;
+    }
+    .input-industrial {
+        @apply w-full bg-transparent border border-white/20 rounded-none px-4 py-3 text-sm text-[#F5F5F5] placeholder:text-[#52525B] transition-colors duration-300 focus:border-[#D35400] focus:outline-none focus:ring-0;
+    }
+    .btn-accent {
+        @apply inline-flex items-center justify-center gap-2 bg-[#D35400] text-[#F5F5F5] font-semibold text-sm tracking-wide uppercase px-8 py-4 transition-colors duration-300 hover:bg-[#E67E22] focus-visible:ring-2 focus-visible:ring-[#D35400] focus-visible:outline-none;
+    }
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 border border-white/20 text-[#F5F5F5] font-semibold text-sm tracking-wide uppercase px-8 py-4 transition-colors duration-300 hover:border-[#D35400] hover:text-[#E67E22] focus-visible:ring-2 focus-visible:ring-[#D35400] focus-visible:outline-none;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+}

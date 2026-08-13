@@ -1,0 +1,133 @@
+{
+  "theme": "dark",
+  "archetype": "THE PERFORMANCE PRO (Elite Athleticism & Precision) blended with SWISS & HIGH-CONTRAST for a raw, industrial workshop feel.",
+  "typography": {
+    "headings": {
+      "font_family": "Bebas Neue",
+      "style": "uppercase, tracking-tight, extremely bold",
+      "weights": ["400"]
+    },
+    "editorial_accents": {
+      "font_family": "Cormorant Garamond",
+      "style": "italic, refined, used for quotes and manifesto text",
+      "weights": ["400", "600"]
+    },
+    "body": {
+      "font_family": "Manrope",
+      "style": "clean, modern, highly legible",
+      "weights": ["400", "500"]
+    },
+    "technical_labels": {
+      "font_family": "IBM Plex Mono",
+      "style": "uppercase, tracking-widest, small size",
+      "weights": ["500"]
+    }
+  },
+  "colors": {
+    "background": {
+      "primary": "#0A0A0A",
+      "secondary": "#121212",
+      "tertiary": "#1A1A1A"
+    },
+    "text": {
+      "primary": "#F5F5F5",
+      "secondary": "#A1A1AA",
+      "muted": "#52525B"
+    },
+    "accent": {
+      "primary": "#D35400",
+      "primary_hover": "#E67E22",
+      "warning": "#F39C12"
+    },
+    "borders": {
+      "subtle": "rgba(255,255,255,0.1)",
+      "strong": "rgba(255,255,255,0.2)"
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Subtle noise overlay on the entire page to give it a gritty, oily, garage feel.",
+    "borders": "1px solid borders separating sections and bento grids, representing an industrial/blueprint aesthetic.",
+    "surfaces": "No soft shadows. Use sharp 1px borders and high contrast backgrounds. Cards should be flat dark grey (#121212) with a 1px border (#27272A)."
+  },
+  "layouts": {
+    "hero": "Full height (min-h-screen). Massive typography with line-by-line reveal using clip-path. Parallax background image of a motorcycle, heavily masked with a linear gradient so it fades into black at the bottom.",
+    "services_grid": "Mode A: 'Tetris' Bento Grid. Asymmetrical grid for services. Mix of col-span-2 and col-span-1. Hovering over a service card changes the border color to accent rust.",
+    "gallery": "Grid layout with clipped frames. Images must use object-cover. Hovering images triggers a slow scale effect (scale-105) over 0.6s.",
+    "manifesto": "Split layout. Left side: Massive numbers (01, 02) in outline or Bebas Neue. Right side: Elegant typography in Cormorant Garamond telling the story."
+  },
+  "motion": {
+    "global": "Lenis smooth momentum scrolling is MANDATORY.",
+    "hero_reveal": "Framer Motion line-by-line text reveal. `initial={{ y: '100%' }}` and `animate={{ y: 0 }}` with a parent container having `overflow: hidden`. Staggered delays.",
+    "marquee": "react-fast-marquee. Editorial Ribbon style. Slow drift, monospace or uppercase Bebas Neue font, outlined or low opacity.",
+    "scroll_animations": "Use framer-motion `whileInView` for fade-up and subtle Y translation on sections.",
+    "parallax": "Framer motion useScroll and useTransform for parallaxing background images in the hero and gallery."
+  },
+  "components": {
+    "header": "Fixed top, z-50. Glassmorphism: `bg-black/60 backdrop-blur-xl border-b border-white/10`. Minimal navigation links, prominent CTA.",
+    "footer": "Massive 'LOCAL MOTO' text at text-[15vw]. Huge py-32 padding. Darkest background (#050505).",
+    "forms": "Shadcn UI base. Customized for industrial look: `bg-transparent border-white/20 rounded-none focus:border-accent-primary focus:ring-0`. Use sharp edges, no rounded corners for inputs."
+  },
+  "image_urls": [
+    {
+      "url": "https://images.unsplash.com/photo-1473147437169-91ac8cebc017?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxjdXN0b20lMjByZXRybyUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzg2NjUzMjM1fDA&ixlib=rb-4.1.0&q=85",
+      "category": "Hero Background",
+      "description": "Black bone motorcycle on black background. Use with heavy gradient overlay."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1514443031610-8c063c7a9822?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHwzfHxkYXJrJTIwYXRtb3NwaGVyaWMlMjBnYXJhZ2UlMjB0b29sc3xlbnwwfHx8fDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85",
+      "category": "Services/Manifesto",
+      "description": "Grayscale photography of metal tools. Excellent for garage atmosphere."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1585152001872-1c1bc66b8ca3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwzfHx2aW50YWdlJTIwbW90b3JjeWNsZSUyMGRldGFpbCUyMGNsb3NlJTIwdXB8ZW58MHx8fGJsYWNrfDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85",
+      "category": "Gallery/Details",
+      "description": "Close up of vintage speedometer."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1568708167243-438efa1d7697?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwzfHxjdXN0b20lMjByZXRybyUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzg2NjUzMjM1fDA&ixlib=rb-4.1.0&q=85",
+      "category": "Gallery/Details",
+      "description": "Cruiser parked on concrete. Good contextual shot."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1576183134742-ff2762d5a402?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHw0fHx2aW50YWdlJTIwbW90b3JjeWNsZSUyMGRldGFpbCUyMGNsb3NlJTIwdXB8ZW58MHx8fGJsYWNrfDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85",
+      "category": "Gallery/Details",
+      "description": "Black and white cruiser motorcycle front view."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1569783899665-fda807461780?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwyfHx2aW50YWdlJTIwbW90b3JjeWNsZSUyMGRldGFpbCUyMGNsb3NlJTIwdXB8ZW58MHx8fGJsYWNrfDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85",
+      "category": "Gallery/Details",
+      "description": "Grayscale photo of motorcycle fork. Industrial detail."
+    }
+  ],
+  "accessibility": {
+    "focus_states": "All interactive elements must have visible focus states (`focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:outline-none`).",
+    "contrast": "Ensure text over images has sufficient contrast. Use `bg-black/60` scrims on images with text over them."
+  },
+  "instructions_to_main_agent": [
+    "Install `lucide-react`, `framer-motion`, `@studio-freight/react-lenis`, and `react-fast-marquee`.",
+    "Add fonts via Google Fonts in index.css: Bebas Neue, Cormorant Garamond, Manrope, IBM Plex Mono.",
+    "Do NOT use HTML `<select>`, `<input type='date'>` directly for advanced inputs. Use Shadcn components, but customize them heavily with sharp corners (rounded-none) and border-white/20.",
+    "Implement Lenis for smooth scrolling in App.js or main layout component.",
+    "Ensure all major interactive elements have `data-testid` tags as per requirements.",
+    "Use standard Tailwind CSS classes. No universal transitions (`transition-all`). Target specific properties (`transition-colors`, `transition-transform`).",
+    "Do NOT center align the app container. Use optical left alignment.",
+    "Use Framer Motion to create the kinetic line-by-line reveal in the hero section."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) for floating headers.",
+    "You MUST NOT apply universal transition. Eg: transition: all. Always add transitions for specific interactive elements excluding transforms.",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories = main agent will use placeholder text which is FORBIDDEN.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Use sonner for toasts. Component located in /app/src/components/ui/sonner.tsx or sonner.jsx."
+  ]
+}
