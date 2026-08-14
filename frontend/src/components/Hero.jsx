@@ -16,7 +16,7 @@ const line = {
 const stats = [
   { value: "2+", label: "Years on the tools" },
   { value: "500+", label: "Bikes back on the road" },
-  { value: "4.9", label: "Rider rating" },
+  { value: "Free", label: "No-obligation quotes" },
 ];
 
 const Hero = () => {
