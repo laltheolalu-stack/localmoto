@@ -14,8 +14,8 @@ const line = {
 };
 
 const stats = [
-  { value: "12+", label: "Years on the tools" },
-  { value: "2,400+", label: "Bikes back on the road" },
+  { value: "2+", label: "Years on the tools" },
+  { value: "500+", label: "Bikes back on the road" },
   { value: "4.9", label: "Rider rating" },
 ];
 
@@ -47,7 +47,7 @@ const Hero = () => {
             className="mono-label text-[#D35400]"
             data-testid="hero-kicker"
           >
-            Motorcycle Repair & Servicing — Est. 2012
+            Motorcycle Repair & Servicing — Est. 2024
           </motion.p>
         </div>
 

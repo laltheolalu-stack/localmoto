@@ -5,7 +5,7 @@ const chapters = [
   {
     n: "01",
     quote: "We fix the bikes other garages gave up on.",
-    body: "Local Moto started in a single-bay unit with a toolbox and a stubborn belief: a small shop can out-care any main dealer. Twelve years later, most of our work still comes from riders telling other riders.",
+    body: "Local Moto started in a single-bay unit with a toolbox and a stubborn belief: a small shop can out-care any main dealer. Two years in, most of our work already comes from riders telling other riders.",
   },
   {
     n: "02",
