@@ -125,7 +125,7 @@ const STR = {
       cta1: "Réserver un service",
       cta2: "Découvrir nos services",
       stats: [
-        { value: "2+", label: "Ans de métier" },
+        { value: "2+", label: "Années d'expérience" },
         { value: "500+", label: "Motos remises en route" },
       ],
       scroll: "Défiler",
@@ -133,13 +133,13 @@ const STR = {
     marquee: ["Réparations", "Entretien", "Contrôle technique", "Pneus", "Diagnostic"],
     services: {
       kicker: "Ce que nous faisons",
-      h1: "Quatre métiers.",
-      h2: "Bien faits.",
+      h1: "Quatre prestations.",
+      h2: "Bien faites.",
       intro: "Pas de vente forcée, pas de jargon, pas de frais cachés. Si ce n'est pas nécessaire, on vous le dit. Si ça l'est, on vous montre pourquoi.",
       items: [
         { n: "01", title: "Réparations & Diagnostic", desc: "Des caprices électriques aux refontes moteur. On trouve la vraie panne, on vous l'explique simplement, et on répare correctement du premier coup." },
         { n: "02", title: "Entretien & Révisions", desc: "Révisions intermédiaires et complètes, jeu aux soupapes, chaîne et freins — planifiés selon votre saison de route." },
-        { n: "03", title: "Contrôle technique", desc: "Préparation au contrôle technique, organisation du rendez-vous, et inspections avant achat honnêtes avant de payer une moto d'occasion." },
+        { n: "03", title: "Contrôle technique", desc: "Préparation au contrôle technique, organisation du rendez-vous, et inspections avant-achat honnêtes avant de payer une moto d'occasion." },
         { n: "04", title: "Pneus & Montage", desc: "Pneus route, sport et classiques fournis et montés avec un équilibrage soigné. Vous arrivez, vous repartez le jour même." },
       ],
     },
@@ -148,7 +148,7 @@ const STR = {
       h1: "Notre",
       h2: "méthode",
       chapters: [
-        { n: "01", quote: "On répare les motos que d'autres garages ont abandonnées.", body: "Local Moto a démarré dans un petit local avec une caisse à outils et une conviction tenace : un petit atelier peut être plus attentionné qu'un concessionnaire. Deux ans plus tard, l'essentiel de notre travail vient déjà de motards qui en parlent à d'autres." },
+        { n: "01", quote: "On répare les motos que d'autres garages ont abandonnées.", body: "Local Moto a démarré dans un petit local avec une caisse à outils et une conviction tenace : un petit atelier peut être plus attentionné qu'un concessionnaire. Deux ans plus tard, l'essentiel de notre travail vient déjà du bouche à oreille entre motards." },
         { n: "02", quote: "Chaque boulon compte. Surtout ceux qu'on ne voit pas.", body: "On serre au couple, on graisse les filetages, et on photographie tout problème avant d'y toucher. Vous repartez avec les anciennes pièces dans une boîte — parce que la confiance se construit sur des preuves, pas des promesses." },
         { n: "03", quote: "Essayée par nous. Conduite par vous.", body: "Chaque moto qui quitte l'atelier passe un vrai essai routier et une vérification complète. Si nous ne la ramènerions pas nous-mêmes, elle ne part pas. C'est aussi simple que ça." },
       ],
@@ -194,7 +194,7 @@ const STR = {
       phonePh: "06 12 34 56 78",
       emailPh: "vous@email.com",
       bikePh: "ex. Triumph Bonneville T120",
-      datePh: "ex. N'importe quel matin en semaine, la semaine prochaine",
+      datePh: "ex. Un matin en semaine, la semaine prochaine",
       notesPh: "Cliquetis à 4000 tr/min, freins un peu mous…",
       messagePh: "Posez-nous vos questions — devis, pièces, idées de projet…",
       submitBooking: "Envoyer la demande",

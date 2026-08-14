@@ -10,7 +10,7 @@ const emptyBooking = { name: "", phone: "", email: "", bike_model: "", service_t
 const emptyEnquiry = { name: "", email: "", message: "" };
 
 const ContactBooking = () => {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [tab, setTab] = useState("booking");
   const [booking, setBooking] = useState(emptyBooking);
   const [enquiry, setEnquiry] = useState(emptyEnquiry);
@@ -20,7 +20,7 @@ const ContactBooking = () => {
     e.preventDefault();
     setSending(true);
     try {
-      const payload = { ...booking, email: booking.email || null, preferred_date: booking.preferred_date || null, notes: booking.notes || null };
+      const payload = { ...booking, email: booking.email || null, preferred_date: booking.preferred_date || null, notes: booking.notes || null, lang };
       await submitBooking(payload);
       toast.success(t.contact.toastBookingOk);
       setBooking(emptyBooking);
@@ -35,7 +35,7 @@ const ContactBooking = () => {
     e.preventDefault();
     setSending(true);
     try {
-      await submitEnquiry(enquiry);
+      await submitEnquiry({ ...enquiry, lang });
       toast.success(t.contact.toastEnquiryOk);
       setEnquiry(emptyEnquiry);
     } catch {

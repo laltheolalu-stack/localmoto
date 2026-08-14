@@ -129,21 +129,29 @@ async def send_email(*, to: str, subject: str, html: str, reply_to: str | None =
     payload = {"to": [to], "subject": subject, "html": html, "from_name": EMAIL_FROM_NAME}
     if reply_to:
         payload["contact_email"] = reply_to
-    try:
-        async with httpx.AsyncClient(timeout=30) as http:
-            resp = await http.post(
-                f"{EMAIL_BASE_URL}/api/v1/email/send",
-                headers={"X-Email-Key": EMAIL_KEY},
-                json=payload,
-            )
-        resp.raise_for_status()
-        return resp.json().get("id")
-    except httpx.HTTPStatusError as e:
-        logger.error("Email send failed: %s %s", e.response.status_code, e.response.text)
-        raise
-    except Exception as e:
-        logger.error("Email send error: %s", e)
-        raise
+    last_error = None
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=30) as http:
+                resp = await http.post(
+                    f"{EMAIL_BASE_URL}/api/v1/email/send",
+                    headers={"X-Email-Key": EMAIL_KEY},
+                    json=payload,
+                )
+            if resp.status_code == 429 and attempt < 2:
+                await asyncio.sleep(20 * (attempt + 1))
+                continue
+            resp.raise_for_status()
+            return resp.json().get("id")
+        except httpx.HTTPStatusError as e:
+            logger.error("Email send failed: %s %s", e.response.status_code, e.response.text)
+            raise
+        except Exception as e:
+            last_error = e
+            logger.error("Email send error: %s", e)
+            raise
+    logger.error("Email send rate-limited after retries: %s", to)
+    raise last_error or HTTPException(status_code=429, detail="Email rate limited")
 
 
 def _notif_table(rows) -> str:
@@ -166,19 +174,47 @@ def _notif_html(title: str, rows) -> str:
     )
 
 
-def _customer_html(title: str, name: str, rows) -> str:
-    return (
+_CUSTOMER_COPY = {
+    "en": {
+        "booking_subject": "We've got your booking request — Local Moto",
+        "booking_title": "Booking request received",
+        "enquiry_subject": "We've got your message — Local Moto",
+        "enquiry_title": "Message received",
+        "intro": "Thanks {name} — your request is in. Here's what you sent us:",
+        "closing": "We'll be in touch within one working day.",
+        "labels": {"Bike": "Bike", "Service": "Service", "Preferred": "Preferred", "Notes": "Notes", "Message": "Message"},
+        "sent_by": "Sent by",
+        "footer": "We never ask for passwords or card details by email.",
+    },
+    "fr": {
+        "booking_subject": "Votre demande de réservation est bien reçue — Local Moto",
+        "booking_title": "Demande de réservation reçue",
+        "enquiry_subject": "Nous avons bien reçu votre message — Local Moto",
+        "enquiry_title": "Message bien reçu",
+        "intro": "Merci {name} — votre demande est bien enregistrée. Voici ce que vous nous avez envoyé :",
+        "closing": "Nous vous recontactons sous un jour ouvré.",
+        "labels": {"Bike": "Moto", "Service": "Service", "Preferred": "Date souhaitée", "Notes": "Remarques", "Message": "Message"},
+        "sent_by": "Envoyé par",
+        "footer": "Nous ne demandons jamais de mot de passe ni de coordonnées bancaires par e-mail.",
+    },
+}
+
+
+def _customer_email(kind: str, name: str, rows, lang: str = "en") -> tuple:
+    copy = _CUSTOMER_COPY.get(lang, _CUSTOMER_COPY["en"])
+    subject = copy[f"{kind}_subject"]
+    title = copy[f"{kind}_title"]
+    label_rows = [(copy["labels"].get(k, k), v) for k, v in rows]
+    html = (
         '<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif">'
         f'<h2 style="margin:0 0 16px;font-family:Arial,sans-serif">{escape(title)}</h2>'
-        f'<p style="font-family:Arial,sans-serif;font-size:14px;color:#111">Thanks {escape(name)} — your request is in. '
-        "Here's what you sent us:</p>"
-        + _notif_table(rows)
-        + '<p style="font-family:Arial,sans-serif;font-size:14px;color:#111;margin-top:16px">'
-          "We'll be in touch within one working day.</p>"
-        + f'<p style="font-size:12px;color:#888;margin-top:24px">Sent by {escape(EMAIL_FROM_NAME)}. '
-          'We never ask for passwords or card details by email.</p>'
-          '</td></tr></table>'
+        f'<p style="font-family:Arial,sans-serif;font-size:14px;color:#111">{escape(copy["intro"].format(name=name))}</p>'
+        + _notif_table(label_rows)
+        + f'<p style="font-family:Arial,sans-serif;font-size:14px;color:#111;margin-top:16px">{escape(copy["closing"])}</p>'
+        + f'<p style="font-size:12px;color:#888;margin-top:24px">{escape(copy["sent_by"])} {escape(EMAIL_FROM_NAME)}. {escape(copy["footer"])}</p>'
+        '</td></tr></table>'
     )
+    return subject, html
 
 
 async def notify_customer(to: str, subject: str, html: str) -> None:
@@ -281,6 +317,7 @@ class Enquiry(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     email: EmailStr
     message: str = Field(min_length=1, max_length=3000)
+    lang: Optional[str] = Field(default=None, max_length=5)
     status: str = "new"
     created_at: str = Field(default_factory=now_iso)
 
@@ -289,6 +326,7 @@ class EnquiryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     email: EmailStr
     message: str = Field(min_length=1, max_length=3000)
+    lang: Optional[str] = Field(default=None, max_length=5)
 
 
 class Booking(BaseModel):
@@ -302,6 +340,7 @@ class Booking(BaseModel):
     notes: Optional[str] = Field(default=None, max_length=3000)
     budget_range: Optional[str] = Field(default=None, max_length=60)
     project_vision: Optional[str] = Field(default=None, max_length=3000)
+    lang: Optional[str] = Field(default=None, max_length=5)
     status: str = "new"
     created_at: str = Field(default_factory=now_iso)
 
@@ -316,6 +355,7 @@ class BookingCreate(BaseModel):
     notes: Optional[str] = Field(default=None, max_length=3000)
     budget_range: Optional[str] = Field(default=None, max_length=60)
     project_vision: Optional[str] = Field(default=None, max_length=3000)
+    lang: Optional[str] = Field(default=None, max_length=5)
 
 
 class LoginRequest(BaseModel):
@@ -428,13 +468,8 @@ async def create_enquiry(payload: EnquiryCreate):
         ]),
         reply_to=enquiry.email,
     ))
-    asyncio.create_task(notify_customer(
-        enquiry.email,
-        "We've got your message — Local Moto",
-        _customer_html("Message received", enquiry.name, [
-            ("Message", enquiry.message),
-        ]),
-    ))
+    csubject, chtml = _customer_email("enquiry", enquiry.name, [("Message", enquiry.message)], enquiry.lang or "en")
+    asyncio.create_task(notify_customer(enquiry.email, csubject, chtml))
     return enquiry
 
 
@@ -481,16 +516,13 @@ async def create_booking(payload: BookingCreate):
         reply_to=booking.email,
     ))
     if booking.email:
-        asyncio.create_task(notify_customer(
-            booking.email,
-            "We've got your booking request — Local Moto",
-            _customer_html("Booking request received", booking.name, [
-                ("Bike", booking.bike_model),
-                ("Service", booking.service_type),
-                ("Preferred", booking.preferred_date),
-                ("Notes", booking.notes),
-            ]),
-        ))
+        csubject, chtml = _customer_email("booking", booking.name, [
+            ("Bike", booking.bike_model),
+            ("Service", booking.service_type),
+            ("Preferred", booking.preferred_date),
+            ("Notes", booking.notes),
+        ], booking.lang or "en")
+        asyncio.create_task(notify_customer(booking.email, csubject, chtml))
     return booking
 
 
