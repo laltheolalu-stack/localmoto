@@ -7,21 +7,13 @@ const Footer = () => {
   return (
     <footer className="bg-[#050505] border-t border-white/10 pt-24 lg:pt-32 overflow-hidden" data-testid="site-footer">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pb-20">
           <div>
             <p className="mono-label text-[#52525B] mb-4">{t.footer.findUs}</p>
             <p className="text-[#A1A1AA] text-sm leading-relaxed">
-              Unit 4, Foundry Lane<br />Millbrook, MB1 2QT<br />
-              <a href="tel:+441234567890" data-testid="footer-phone" className="hover:text-[#E67E22] transition-colors duration-300">01234 567 890</a><br />
+              4273 Laurentian Autoroute<br />
+              <a href="tel:+15142666607" data-testid="footer-phone" className="hover:text-[#E67E22] transition-colors duration-300">514 266 6607</a><br />
               <a href="mailto:hello@localmoto.co.uk" data-testid="footer-email" className="hover:text-[#E67E22] transition-colors duration-300">hello@localmoto.co.uk</a>
-            </p>
-          </div>
-          <div>
-            <p className="mono-label text-[#52525B] mb-4">{t.footer.hours}</p>
-            <p className="text-[#A1A1AA] text-sm leading-relaxed">
-              {t.contact.hours.map((h) => (
-                <span key={h} className="block">{h}</span>
-              ))}
             </p>
           </div>
           <div>

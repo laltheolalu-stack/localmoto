@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { MapPin, Phone, Clock, ArrowRight, Loader2 } from "lucide-react";
+import { MapPin, Phone, ArrowRight, Loader2 } from "lucide-react";
 import { submitBooking, submitEnquiry } from "@/lib/api";
 import TrackedHeading from "@/components/TrackedHeading";
 import { useLang } from "@/lib/site-lang";
@@ -64,7 +64,7 @@ const ContactBooking = () => {
               <div>
                 <p className="mono-label text-[#52525B] mb-2">{t.contact.workshopLabel}</p>
                 <p className="text-[#F5F5F5] text-sm leading-relaxed" data-testid="contact-address">
-                  Unit 4, Foundry Lane<br />Millbrook, MB1 2QT
+                  4273 Laurentian Autoroute
                 </p>
               </div>
             </div>
@@ -72,20 +72,9 @@ const ContactBooking = () => {
               <Phone size={20} className="text-[#D35400] mt-1 shrink-0" />
               <div>
                 <p className="mono-label text-[#52525B] mb-2">{t.contact.phoneLabel}</p>
-                <a href="tel:+441234567890" data-testid="contact-phone" className="text-[#F5F5F5] text-sm hover:text-[#E67E22] transition-colors duration-300">
-                  01234 567 890
+                <a href="tel:+15142666607" data-testid="contact-phone" className="text-[#F5F5F5] text-sm hover:text-[#E67E22] transition-colors duration-300">
+                  514 266 6607
                 </a>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <Clock size={20} className="text-[#D35400] mt-1 shrink-0" />
-              <div>
-                <p className="mono-label text-[#52525B] mb-2">{t.contact.hoursLabel}</p>
-                <p className="text-[#F5F5F5] text-sm leading-relaxed" data-testid="contact-hours">
-                  {t.contact.hours.map((h) => (
-                    <span key={h} className="block">{h}</span>
-                  ))}
-                </p>
               </div>
             </div>
           </div>
