@@ -163,15 +163,41 @@ def _notif_table(rows) -> str:
     return f'<table role="presentation" style="font-family:Arial,sans-serif;font-size:14px">{body}</table>'
 
 
-def _notif_html(title: str, rows) -> str:
-    return (
+_OWNER_COPY = {
+    "en": {
+        "booking_subject": "New booking request — {bike}",
+        "booking_title": "New booking request",
+        "enquiry_subject": "New enquiry — {name}",
+        "enquiry_title": "New enquiry from the website",
+        "labels": {"Name": "Name", "Email": "Email", "Phone": "Phone", "Bike": "Bike", "Service": "Service", "Preferred": "Preferred", "Notes": "Notes", "Message": "Message", "Received": "Received"},
+        "sent_by": "Sent by",
+        "footer": "a new request came in through your website. Sign in to the admin dashboard to manage it.",
+    },
+    "fr": {
+        "booking_subject": "Nouvelle demande de réservation — {bike}",
+        "booking_title": "Nouvelle demande de réservation",
+        "enquiry_subject": "Nouvelle demande — {name}",
+        "enquiry_title": "Nouvelle demande depuis le site web",
+        "labels": {"Name": "Nom", "Email": "E-mail", "Phone": "Téléphone", "Bike": "Moto", "Service": "Service", "Preferred": "Date souhaitée", "Notes": "Remarques", "Message": "Message", "Received": "Reçu le"},
+        "sent_by": "Envoyé par",
+        "footer": "une nouvelle demande est arrivée via votre site. Connectez-vous au tableau de bord admin pour la gérer.",
+    },
+}
+
+
+def _owner_email(kind: str, name: str, rows, lang: str = "en", bike: str | None = None) -> tuple:
+    copy = _OWNER_COPY.get(lang, _OWNER_COPY["en"])
+    subject = copy[f"{kind}_subject"].format(name=name, bike=bike or "")
+    title = copy[f"{kind}_title"]
+    label_rows = [(copy["labels"].get(k, k), v) for k, v in rows]
+    html = (
         '<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif">'
         f'<h2 style="margin:0 0 16px;font-family:Arial,sans-serif">{escape(title)}</h2>'
-        + _notif_table(rows)
-        + f'<p style="font-size:12px;color:#888;margin-top:24px">Sent by {escape(EMAIL_FROM_NAME)} — a new request came in through your website. '
-          'Sign in to the admin dashboard to manage it.</p>'
-          '</td></tr></table>'
+        + _notif_table(label_rows)
+        + f'<p style="font-size:12px;color:#888;margin-top:24px">{escape(copy["sent_by"])} {escape(EMAIL_FROM_NAME)} — {escape(copy["footer"])}</p>'
+        '</td></tr></table>'
     )
+    return subject, html
 
 
 _CUSTOMER_COPY = {
@@ -458,16 +484,13 @@ async def me(user: dict = Depends(get_current_user)):
 async def create_enquiry(payload: EnquiryCreate):
     enquiry = Enquiry(**payload.model_dump())
     await db.enquiries.insert_one(enquiry.model_dump())
-    asyncio.create_task(notify_all(
-        f"New enquiry — {enquiry.name}",
-        _notif_html("New enquiry from the website", [
-            ("Name", enquiry.name),
-            ("Email", enquiry.email),
-            ("Message", enquiry.message),
-            ("Received", enquiry.created_at),
-        ]),
-        reply_to=enquiry.email,
-    ))
+    osubject, ohtml = _owner_email("enquiry", enquiry.name, [
+        ("Name", enquiry.name),
+        ("Email", enquiry.email),
+        ("Message", enquiry.message),
+        ("Received", enquiry.created_at),
+    ], enquiry.lang or "en")
+    asyncio.create_task(notify_all(osubject, ohtml, reply_to=enquiry.email))
     csubject, chtml = _customer_email("enquiry", enquiry.name, [("Message", enquiry.message)], enquiry.lang or "en")
     asyncio.create_task(notify_customer(enquiry.email, csubject, chtml))
     return enquiry
@@ -501,20 +524,17 @@ async def delete_enquiry(item_id: str, user: dict = Depends(get_current_user)):
 async def create_booking(payload: BookingCreate):
     booking = Booking(**payload.model_dump())
     await db.bookings.insert_one(booking.model_dump())
-    asyncio.create_task(notify_all(
-        f"New booking request — {booking.bike_model}",
-        _notif_html("New booking request", [
-            ("Name", booking.name),
-            ("Phone", booking.phone),
-            ("Email", booking.email),
-            ("Bike", booking.bike_model),
-            ("Service", booking.service_type),
-            ("Preferred", booking.preferred_date),
-            ("Notes", booking.notes),
-            ("Received", booking.created_at),
-        ]),
-        reply_to=booking.email,
-    ))
+    osubject, ohtml = _owner_email("booking", booking.name, [
+        ("Name", booking.name),
+        ("Phone", booking.phone),
+        ("Email", booking.email),
+        ("Bike", booking.bike_model),
+        ("Service", booking.service_type),
+        ("Preferred", booking.preferred_date),
+        ("Notes", booking.notes),
+        ("Received", booking.created_at),
+    ], booking.lang or "en", bike=booking.bike_model)
+    asyncio.create_task(notify_all(osubject, ohtml, reply_to=booking.email))
     if booking.email:
         csubject, chtml = _customer_email("booking", booking.name, [
             ("Bike", booking.bike_model),

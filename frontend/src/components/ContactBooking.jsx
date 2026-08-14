@@ -63,9 +63,9 @@ const ContactBooking = () => {
               <MapPin size={20} className="text-[#D35400] mt-1 shrink-0" />
               <div>
                 <p className="mono-label text-[#52525B] mb-2">{t.contact.workshopLabel}</p>
-                <p className="text-[#F5F5F5] text-sm leading-relaxed" data-testid="contact-address">
+                <a href="https://www.google.com/maps/search/?api=1&query=4273+Laurentian+Autoroute" target="_blank" rel="noopener noreferrer" data-testid="contact-address" className="text-[#F5F5F5] text-sm leading-relaxed hover:text-[#E67E22] transition-colors duration-300 block">
                   4273 Laurentian Autoroute
-                </p>
+                </a>
               </div>
             </div>
             <div className="flex items-start gap-4">
