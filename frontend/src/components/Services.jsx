@@ -1,37 +1,12 @@
 import { motion } from "framer-motion";
 import { Wrench, Gauge, ClipboardCheck, Disc3 } from "lucide-react";
 import TrackedHeading from "@/components/TrackedHeading";
+import { useLang } from "@/lib/site-lang";
 
 const TOOLS_IMG =
   "https://images.unsplash.com/photo-1514443031610-8c063c7a9822?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHwzfHxkYXJrJTIwYXRtb3NwaGVyaWMlMjBnYXJhZ2UlMjB0b29sc3xlbnwwfHx8fDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85";
 
-const services = [
-  {
-    n: "01",
-    icon: Wrench,
-    title: "Repairs & Diagnostics",
-    desc: "From electrical gremlins to engine rebuilds. We find the real fault, explain it in plain English, and fix it properly the first time.",
-    img: TOOLS_IMG,
-  },
-  {
-    n: "02",
-    icon: Gauge,
-    title: "Servicing & Maintenance",
-    desc: "Interim and full services, valve clearances, chain and brake care — scheduled around your riding season.",
-  },
-  {
-    n: "03",
-    icon: ClipboardCheck,
-    title: "MOT & Inspection",
-    desc: "Pre-MOT checks, MOT arrangement, and honest pre-purchase inspections before you hand over cash for a used bike.",
-  },
-  {
-    n: "04",
-    icon: Disc3,
-    title: "Tyres & Fitting",
-    desc: "Road, sport and classic rubber supplied and fitted with proper balancing. Ride in, ride out the same day.",
-  },
-];
+const icons = [Wrench, Gauge, ClipboardCheck, Disc3];
 
 const cardMotion = (i) => ({
   initial: { opacity: 0, y: 40 },
@@ -41,38 +16,36 @@ const cardMotion = (i) => ({
 });
 
 const Services = () => {
+  const { t } = useLang();
   return (
     <section id="services" className="py-28 lg:py-40 border-b border-white/10" data-testid="services-section">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16 lg:mb-24">
           <div>
-            <p className="mono-label text-[#D35400] mb-5" data-testid="services-kicker">What we do</p>
+            <p className="mono-label text-[#D35400] mb-5" data-testid="services-kicker">{t.services.kicker}</p>
             <TrackedHeading className="text-5xl md:text-7xl" data-testid="services-heading">
-              Four things.<br />
-              <span className="text-stroke">Done right.</span>
+              {t.services.h1}<br />
+              <span className="text-stroke">{t.services.h2}</span>
             </TrackedHeading>
           </div>
           <p className="text-[#A1A1AA] text-base max-w-md leading-relaxed">
-            No upselling, no jargon, no mystery charges. If it doesn't need doing,
-            we'll tell you. If it does, we'll show you why.
+            {t.services.intro}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10">
-          {services.map((s, i) => {
-            const Icon = s.icon;
+          {t.services.items.map((s, i) => {
+            const Icon = icons[i];
             return (
               <motion.article
                 key={s.n}
                 {...cardMotion(i)}
                 data-testid={`service-card-${s.n}`}
-                className={`group relative bg-[#121212] p-8 lg:p-10 border border-transparent hover:border-[#D35400] transition-colors duration-500 overflow-hidden ${
-                  s.wide ? "md:col-span-2" : ""
-                }`}
+                className="group relative bg-[#121212] p-8 lg:p-10 border border-transparent hover:border-[#D35400] transition-colors duration-500 overflow-hidden"
               >
-                {s.img && (
+                {i === 0 && (
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-25 transition-opacity duration-700">
-                    <img src={s.img} alt="" className="w-full h-full object-cover" />
+                    <img src={TOOLS_IMG} alt="" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/60 to-transparent" />
                   </div>
                 )}

@@ -1,35 +1,19 @@
 import { motion } from "framer-motion";
 import TrackedHeading from "@/components/TrackedHeading";
-
-const chapters = [
-  {
-    n: "01",
-    quote: "We fix the bikes other garages gave up on.",
-    body: "Local Moto started in a single-bay unit with a toolbox and a stubborn belief: a small shop can out-care any main dealer. Two years in, most of our work already comes from riders telling other riders.",
-  },
-  {
-    n: "02",
-    quote: "Every bolt matters. Especially the ones you can't see.",
-    body: "We torque to spec, grease the threads, and photograph anything we find wrong before we touch it. You get the old parts back in a box — because trust is built on proof, not promises.",
-  },
-  {
-    n: "03",
-    quote: "Ridden by us. Owned by you.",
-    body: "Every bike that leaves the workshop gets a proper road test and a shake-down check. If we wouldn't ride it home, it doesn't leave. Simple as that.",
-  },
-];
+import { useLang } from "@/lib/site-lang";
 
 const Manifesto = () => {
+  const { t } = useLang();
   return (
     <section id="workshop" className="py-28 lg:py-40 border-b border-white/10 bg-[#0D0D0D]" data-testid="manifesto-section">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-        <p className="mono-label text-[#D35400] mb-5" data-testid="manifesto-kicker">The workshop creed</p>
+        <p className="mono-label text-[#D35400] mb-5" data-testid="manifesto-kicker">{t.manifesto.kicker}</p>
         <TrackedHeading className="text-5xl md:text-7xl mb-20 lg:mb-28" data-testid="manifesto-heading">
-          How we <span className="text-stroke">work</span>
+          {t.manifesto.h1} <span className="text-stroke">{t.manifesto.h2}</span>
         </TrackedHeading>
 
         <div className="flex flex-col">
-          {chapters.map((c, i) => (
+          {t.manifesto.chapters.map((c, i) => (
             <motion.div
               key={c.n}
               initial={{ opacity: 0, y: 50 }}

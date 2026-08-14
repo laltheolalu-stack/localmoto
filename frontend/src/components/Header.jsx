@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
-
-const links = [
-  { label: "Services", href: "#services" },
-  { label: "Workshop", href: "#workshop" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "Visit Us", href: "#contact" },
-];
+import { Menu, X, Globe } from "lucide-react";
+import { useLang } from "@/lib/site-lang";
 
 export const scrollToId = (href) => {
   const el = document.querySelector(href);
@@ -16,9 +10,32 @@ export const scrollToId = (href) => {
   else el.scrollIntoView({ behavior: "smooth" });
 };
 
+const LangButton = ({ testid }) => {
+  const { lang, toggleLang } = useLang();
+  return (
+    <button
+      data-testid={testid}
+      onClick={toggleLang}
+      aria-label="Switch language"
+      className="mono-label flex items-center gap-2 text-[#A1A1AA] hover:text-[#E67E22] border border-white/20 hover:border-[#D35400] px-3 py-2 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
+    >
+      <Globe size={14} />
+      {lang === "en" ? "FR" : "EN"}
+    </button>
+  );
+};
+
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { t } = useLang();
+
+  const links = [
+    { label: t.nav.services, href: "#services", testid: "nav-link-services" },
+    { label: t.nav.workshop, href: "#workshop", testid: "nav-link-workshop" },
+    { label: t.nav.gallery, href: "#gallery", testid: "nav-link-gallery" },
+    { label: t.nav.visit, href: "#contact", testid: "nav-link-visit-us" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -50,34 +67,38 @@ const Header = () => {
           LOCAL<span className="text-[#D35400]">MOTO</span>
         </button>
 
-        <nav className="hidden md:flex items-center gap-10" data-testid="header-nav">
+        <nav className="hidden md:flex items-center gap-8" data-testid="header-nav">
           {links.map((l) => (
             <button
               key={l.href}
-              data-testid={`nav-link-${l.label.toLowerCase().replace(" ", "-")}`}
+              data-testid={l.testid}
               onClick={() => go(l.href)}
               className="mono-label text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
             >
               {l.label}
             </button>
           ))}
+          <LangButton testid="site-lang-toggle" />
           <button
             data-testid="nav-book-cta"
             onClick={() => go("#contact")}
             className="bg-[#D35400] hover:bg-[#E67E22] transition-colors duration-300 text-[#F5F5F5] mono-label px-6 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E67E22]"
           >
-            Book a Service
+            {t.nav.book}
           </button>
         </nav>
 
-        <button
-          data-testid="mobile-menu-toggle"
-          className="md:hidden text-[#F5F5F5] p-2"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="md:hidden flex items-center gap-3">
+          <LangButton testid="site-lang-toggle-mobile" />
+          <button
+            data-testid="mobile-menu-toggle"
+            className="text-[#F5F5F5] p-2"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -85,7 +106,7 @@ const Header = () => {
           {links.map((l) => (
             <button
               key={l.href}
-              data-testid={`mobile-nav-${l.label.toLowerCase().replace(" ", "-")}`}
+              data-testid={`mobile-${l.testid}`}
               onClick={() => go(l.href)}
               className="mono-label text-left text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors duration-300"
             >
@@ -97,7 +118,7 @@ const Header = () => {
             onClick={() => go("#contact")}
             className="bg-[#D35400] text-[#F5F5F5] mono-label px-6 py-3 text-left"
           >
-            Book a Service
+            {t.nav.book}
           </button>
         </div>
       )}

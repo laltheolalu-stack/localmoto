@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { scrollToId } from "@/components/Header";
+import { useLang } from "@/lib/site-lang";
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1473147437169-91ac8cebc017?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxjdXN0b20lMjByZXRybyUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzg2NjUzMjM1fDA&ixlib=rb-4.1.0&q=85";
@@ -13,12 +14,8 @@ const line = {
   }),
 };
 
-const stats = [
-  { value: "2+", label: "Years on the tools" },
-  { value: "500+", label: "Bikes back on the road" },
-];
-
 const Hero = () => {
+  const { t } = useLang();
   const { scrollY } = useScroll();
   const bgY = useTransform(scrollY, [0, 900], [0, 260]);
   const bgScale = useTransform(scrollY, [0, 900], [1.05, 1.18]);
@@ -46,19 +43,19 @@ const Hero = () => {
             className="mono-label text-[#D35400]"
             data-testid="hero-kicker"
           >
-            Motorcycle Repair & Servicing — Est. 2024
+            {t.hero.kicker}
           </motion.p>
         </div>
 
         <h1 className="font-display uppercase leading-[0.88] tracking-tight text-[#F5F5F5]">
           <span className="block overflow-hidden">
             <motion.span variants={line} custom={1} initial="hidden" animate="show" className="block text-[15vw] lg:text-[11vw]">
-              Your bike
+              {t.hero.line1}
             </motion.span>
           </span>
           <span className="block overflow-hidden">
             <motion.span variants={line} custom={2} initial="hidden" animate="show" className="block text-[15vw] lg:text-[11vw]">
-              deserves <span className="text-stroke-accent">better</span>
+              {t.hero.line2a} <span className="text-stroke-accent">{t.hero.line2b}</span>
             </motion.span>
           </span>
         </h1>
@@ -72,9 +69,7 @@ const Hero = () => {
             className="text-[#A1A1AA] text-base md:text-lg leading-relaxed"
             data-testid="hero-subcopy"
           >
-            A small, independent workshop keeping local riders on the road. Honest
-            repairs, proper servicing, MOT prep and tyres — done right, priced
-            straight.
+            {t.hero.sub}
           </motion.p>
         </div>
 
@@ -85,11 +80,11 @@ const Hero = () => {
           className="flex flex-wrap items-center gap-4 mt-10"
         >
           <button data-testid="hero-book-cta" onClick={() => scrollToId("#contact")} className="btn-accent group">
-            Book a service
+            {t.hero.cta1}
             <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
           </button>
           <button data-testid="hero-services-cta" onClick={() => scrollToId("#services")} className="btn-ghost">
-            See what we do
+            {t.hero.cta2}
           </button>
         </motion.div>
 
@@ -100,7 +95,7 @@ const Hero = () => {
           className="grid grid-cols-2 gap-6 mt-16 pt-8 border-t border-white/10 max-w-2xl"
           data-testid="hero-stats"
         >
-          {stats.map((s) => (
+          {t.hero.stats.map((s) => (
             <div key={s.label}>
               <p className="font-display text-3xl md:text-5xl text-[#F5F5F5]">{s.value}</p>
               <p className="mono-label text-[#52525B] mt-2">{s.label}</p>
@@ -118,7 +113,7 @@ const Hero = () => {
         className="absolute bottom-8 right-6 lg:right-12 z-10 hidden md:flex flex-col items-center gap-3 text-[#52525B] hover:text-[#D35400] transition-colors duration-300"
         aria-label="Scroll down"
       >
-        <span className="mono-label rotate-90 origin-center translate-y-[-8px]">Scroll</span>
+        <span className="mono-label rotate-90 origin-center translate-y-[-8px]">{t.hero.scroll}</span>
         <ArrowDown size={16} className="animate-bounce mt-8" />
       </motion.button>
     </section>

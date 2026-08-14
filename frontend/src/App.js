@@ -3,6 +3,7 @@ import Lenis from "lenis";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "@/App.css";
 import { Toaster } from "@/components/ui/sonner";
+import { LangProvider } from "@/lib/site-lang";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import EditorialMarquee from "@/components/EditorialMarquee";
@@ -50,12 +51,14 @@ function App() {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F5F5] min-h-screen" data-testid="app-root">
       <div className="noise-overlay" aria-hidden="true" />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/admin" element={<AdminPage />} />
-        </Routes>
-      </BrowserRouter>
+      <LangProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/admin" element={<AdminPage />} />
+          </Routes>
+        </BrowserRouter>
+      </LangProvider>
       <Toaster position="bottom-right" theme="dark" />
     </div>
   );
