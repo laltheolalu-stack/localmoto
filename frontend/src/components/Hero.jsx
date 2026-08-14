@@ -16,7 +16,6 @@ const line = {
 const stats = [
   { value: "2+", label: "Years on the tools" },
   { value: "500+", label: "Bikes back on the road" },
-  { value: "Free", label: "No-obligation quotes" },
 ];
 
 const Hero = () => {
@@ -98,7 +97,7 @@ const Hero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.4 }}
-          className="grid grid-cols-3 gap-6 mt-16 pt-8 border-t border-white/10 max-w-2xl"
+          className="grid grid-cols-2 gap-6 mt-16 pt-8 border-t border-white/10 max-w-2xl"
           data-testid="hero-stats"
         >
           {stats.map((s) => (
