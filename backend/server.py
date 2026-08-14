@@ -45,6 +45,11 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def admin_emails() -> list:
+    raw = os.environ.get("ADMIN_EMAILS") or os.environ.get("ADMIN_EMAIL", "")
+    return [e.strip().lower() for e in raw.split(",") if e.strip()]
+
+
 # --- Email guardrail gate (G2/G3) ---
 _SHORTENERS = ("bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "goo.gl", "rebrand.ly")
 _CRED_ASK = ("reply with your password", "reply with the code", "send your password", "cvv",
@@ -226,22 +231,26 @@ async def get_current_user(request: Request) -> dict:
 
 
 async def seed_admin():
-    admin_email = os.environ["ADMIN_EMAIL"].lower()
     admin_password = os.environ["ADMIN_PASSWORD"]
-    existing = await db.users.find_one({"email": admin_email})
-    if existing is None:
-        await db.users.insert_one({
-            "id": str(uuid.uuid4()),
-            "email": admin_email,
-            "password_hash": hash_password(admin_password),
-            "name": "Shop Admin",
-            "role": "admin",
-            "created_at": now_iso(),
-        })
-        logger.info("Admin user seeded: %s", admin_email)
-    elif not verify_password(admin_password, existing["password_hash"]):
-        await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
-        logger.info("Admin password updated from env: %s", admin_email)
+    allowed = admin_emails()
+    for email in allowed:
+        existing = await db.users.find_one({"email": email})
+        if existing is None:
+            await db.users.insert_one({
+                "id": str(uuid.uuid4()),
+                "email": email,
+                "password_hash": hash_password(admin_password),
+                "name": "Shop Admin",
+                "role": "admin",
+                "created_at": now_iso(),
+            })
+            logger.info("Admin user seeded: %s", email)
+        elif not existing.get("password_hash") or not verify_password(admin_password, existing["password_hash"]):
+            await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(admin_password)}})
+            logger.info("Admin password updated from env: %s", email)
+    removed = await db.users.delete_many({"role": "admin", "email": {"$nin": allowed}})
+    if removed.deleted_count:
+        logger.info("Removed %d stale admin user(s)", removed.deleted_count)
 
 
 class Enquiry(BaseModel):
@@ -316,7 +325,7 @@ async def login(payload: LoginRequest, request: Request):
             raise HTTPException(status_code=429, detail="Too many failed attempts. Try again in 15 minutes.")
 
     user = await db.users.find_one({"email": email})
-    if not user or not verify_password(payload.password, user["password_hash"]):
+    if not user or not user.get("password_hash") or not verify_password(payload.password, user["password_hash"]):
         await db.login_attempts.update_one(
             {"identifier": identifier},
             {"$inc": {"count": 1}, "$set": {"updated_at": now_iso()}},
@@ -338,12 +347,19 @@ async def create_google_session(payload: GoogleSessionRequest, response: Respons
 
     data = r.json()
     email = data["email"].lower()
-    if email != os.environ["ADMIN_EMAIL"].lower():
+    if email not in admin_emails():
         raise HTTPException(status_code=403, detail="This Google account isn't authorised for the workshop admin.")
 
     user = await db.users.find_one({"email": email})
     if not user:
-        await seed_admin()
+        await db.users.insert_one({
+            "id": str(uuid.uuid4()),
+            "email": email,
+            "password_hash": hash_password(os.environ["ADMIN_PASSWORD"]),
+            "name": data.get("name", "Shop Admin"),
+            "role": "admin",
+            "created_at": now_iso(),
+        })
         user = await db.users.find_one({"email": email})
 
     session_token = data["session_token"]
