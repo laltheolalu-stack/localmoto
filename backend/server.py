@@ -21,7 +21,8 @@ import uuid
 import bcrypt
 import jwt
 import httpx
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
+from zoneinfo import ZoneInfo
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -34,6 +35,7 @@ JWT_ALGORITHM = "HS256"
 LOCKOUT_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
 EMERGENT_SESSION_DATA_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+SHOP_TZ = ZoneInfo("America/Montreal")
 
 EMAIL_BASE_URL = "https://integrations.emergentagent.com"
 EMAIL_KEY = os.environ["EMERGENT_EMAIL_KEY"]
@@ -200,6 +202,19 @@ def _owner_email(kind: str, name: str, rows, lang: str = "en", bike: str | None 
     return subject, html
 
 
+_FR_MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+
+
+def _fmt_date(iso: str, lang: str) -> str:
+    try:
+        d = date.fromisoformat(iso)
+    except (ValueError, TypeError):
+        return iso or ""
+    if lang == "fr":
+        return f"{d.day} {_FR_MONTHS[d.month - 1]} {d.year}"
+    return f"{d.day} {d.strftime('%B')} {d.year}"
+
+
 _CUSTOMER_COPY = {
     "en": {
         "booking_subject": "We've got your booking request — Local Moto",
@@ -211,6 +226,9 @@ _CUSTOMER_COPY = {
         "labels": {"Bike": "Bike", "Service": "Service", "Preferred": "Preferred", "Notes": "Notes", "Message": "Message"},
         "sent_by": "Sent by",
         "footer": "We never ask for passwords or card details by email.",
+        "reminder_subject": "Reminder: your Local Moto booking is tomorrow",
+        "reminder_title": "Booking reminder",
+        "reminder_intro": "Hi {name} — a quick reminder that your {bike} is booked in with us tomorrow, {date}. If anything has changed, just reply to this email or call 514 266 6607.",
     },
     "fr": {
         "booking_subject": "Votre demande de réservation est bien reçue — Local Moto",
@@ -222,6 +240,9 @@ _CUSTOMER_COPY = {
         "labels": {"Bike": "Moto", "Service": "Service", "Preferred": "Date souhaitée", "Notes": "Remarques", "Message": "Message"},
         "sent_by": "Envoyé par",
         "footer": "Nous ne demandons jamais de mot de passe ni de coordonnées bancaires par e-mail.",
+        "reminder_subject": "Rappel : votre rendez-vous Local Moto, c'est demain",
+        "reminder_title": "Rappel de rendez-vous",
+        "reminder_intro": "Bonjour {name} — petit rappel : votre {bike} est attendue à l'atelier demain, {date}. Si quelque chose a changé, répondez à cet e-mail ou appelez le 514 266 6607.",
     },
 }
 
@@ -243,6 +264,20 @@ def _customer_email(kind: str, name: str, rows, lang: str = "en") -> tuple:
     return subject, html
 
 
+def _reminder_email(name: str, bike: str, date_iso: str, lang: str = "en") -> tuple:
+    copy = _CUSTOMER_COPY.get(lang, _CUSTOMER_COPY["en"])
+    pretty = _fmt_date(date_iso, lang)
+    intro = copy["reminder_intro"].format(name=escape(name), bike=escape(bike), date=escape(pretty))
+    html = (
+        '<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif">'
+        f'<h2 style="margin:0 0 16px;font-family:Arial,sans-serif">{escape(copy["reminder_title"])}</h2>'
+        f'<p style="font-family:Arial,sans-serif;font-size:14px;color:#111">{intro}</p>'
+        f'<p style="font-size:12px;color:#888;margin-top:24px">{escape(copy["sent_by"])} {escape(EMAIL_FROM_NAME)}. {escape(copy["footer"])}</p>'
+        '</td></tr></table>'
+    )
+    return copy["reminder_subject"], html
+
+
 async def notify_customer(to: str, subject: str, html: str) -> None:
     try:
         await send_email(to=to, subject=subject, html=html, reply_to=NOTIFY_EMAILS[0] if NOTIFY_EMAILS else None)
@@ -258,6 +293,29 @@ async def notify_all(subject: str, html: str, reply_to: str | None = None) -> No
             logger.info("Notification email sent to %s", to)
         except Exception as e:
             logger.error("Notification email to %s failed: %s", to, e)
+
+
+async def check_booking_reminders() -> None:
+    tomorrow = (datetime.now(SHOP_TZ) + timedelta(days=1)).date().isoformat()
+    due = await db.bookings.find(
+        {"appointment_date": tomorrow, "reminder_sent": {"$ne": True}, "status": {"$ne": "done"}, "email": {"$ne": None}},
+        {"_id": 0},
+    ).to_list(200)
+    for b in due:
+        subject, html = _reminder_email(b["name"], b["bike_model"], b["appointment_date"], b.get("lang") or "en")
+        await notify_customer(b["email"], subject, html)
+        await db.bookings.update_one({"id": b["id"]}, {"$set": {"reminder_sent": True}})
+    if due:
+        logger.info("Sent %d booking reminder(s) for %s", len(due), tomorrow)
+
+
+async def reminder_loop() -> None:
+    while True:
+        try:
+            await check_booking_reminders()
+        except Exception as e:
+            logger.error("Reminder check failed: %s", e)
+        await asyncio.sleep(3600)
 
 
 # --- Auth helpers ---
@@ -367,6 +425,8 @@ class Booking(BaseModel):
     budget_range: Optional[str] = Field(default=None, max_length=60)
     project_vision: Optional[str] = Field(default=None, max_length=3000)
     lang: Optional[str] = Field(default=None, max_length=5)
+    appointment_date: Optional[str] = Field(default=None, max_length=10)
+    reminder_sent: bool = False
     status: str = "new"
     created_at: str = Field(default_factory=now_iso)
 
@@ -382,6 +442,11 @@ class BookingCreate(BaseModel):
     budget_range: Optional[str] = Field(default=None, max_length=60)
     project_vision: Optional[str] = Field(default=None, max_length=3000)
     lang: Optional[str] = Field(default=None, max_length=5)
+
+
+class BookingUpdate(BaseModel):
+    status: Optional[str] = Field(default=None, pattern="^(new|contacted|done)$")
+    appointment_date: Optional[str] = Field(default=None, max_length=10)
 
 
 class LoginRequest(BaseModel):
@@ -551,15 +616,26 @@ async def list_bookings(user: dict = Depends(get_current_user)):
     docs = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
     for d in docs:
         d.setdefault("status", "new")
+        d.setdefault("appointment_date", None)
+        d.setdefault("reminder_sent", False)
     return docs
 
 
 @api_router.patch("/bookings/{item_id}", response_model=Booking)
-async def update_booking(item_id: str, payload: StatusUpdate, user: dict = Depends(get_current_user)):
-    result = await db.bookings.update_one({"id": item_id}, {"$set": {"status": payload.status}})
+async def update_booking(item_id: str, payload: BookingUpdate, user: dict = Depends(get_current_user)):
+    update = {}
+    if payload.status is not None:
+        update["status"] = payload.status
+    if payload.appointment_date is not None:
+        update["appointment_date"] = payload.appointment_date or None
+        update["reminder_sent"] = False
+    if not update:
+        raise HTTPException(status_code=400, detail="Nothing to update")
+    result = await db.bookings.update_one({"id": item_id}, {"$set": update})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Booking not found")
     doc = await db.bookings.find_one({"id": item_id}, {"_id": 0})
+    doc.setdefault("reminder_sent", False)
     return doc
 
 
@@ -590,6 +666,7 @@ async def startup():
     await db.login_attempts.create_index("identifier")
     await db.user_sessions.create_index("session_token")
     await seed_admin()
+    asyncio.create_task(reminder_loop())
 
 
 @app.on_event("shutdown")

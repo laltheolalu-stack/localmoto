@@ -37,6 +37,7 @@ Scope change (2026-08-13): owner removed Custom Builds & Restoration as an offer
 - 2026-08-14: Real details added — address 4273 Laurentian Autoroute and phone 514 266 6607 in contact section + footer (tel: links). Opening hours removed everywhere per owner request. Public email hello@localmoto.co.uk remains a PLACEHOLDER (owner gave no public email).
 - 2026-08-14: Owner notification emails now follow the customer's language too (FR subjects/titles/labels when booked from the French site). Address in contact section and footer links to Google Maps directions (new tab). Verified: FR booking triggered French owner alerts to both inboxes + French customer confirmation; both address links confirmed live.
 - 2026-08-14: Public email set to Pierre.localmoto@gmail.com in the footer (mailto link). All site contact details are now real — no placeholders remain.
+- 2026-08-14: Booking reminders — admin sets a confirmed appointment date on each booking card; a background scheduler (hourly, America/Montreal timezone) emails the customer the day before, once, in the customer's language (EN/FR templates, pretty-printed dates). Changing the date re-arms the reminder; done bookings are skipped. Card shows "reminder goes out day before" / "reminder sent ✓". Verified: booking set to tomorrow → reminder sent on scheduler run, reminder_sent persisted, no resend on restart, UI date picker + states work.
 
 ## Backlog
 - P0: Replace placeholder address/phone/hours/email with real business details (user to supply).

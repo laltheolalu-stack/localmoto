@@ -49,6 +49,9 @@ const STR = {
     loginFailed: "Login failed. Check your details.",
     googleFailed: "Google sign-in failed.",
     prefers: "Prefers:",
+    appointment: "Appointment date",
+    reminderAuto: "Reminder email goes out the day before",
+    reminderSent: "Reminder sent ✓",
     newCount: (n) => `${n} new`,
   },
   fr: {
@@ -88,6 +91,9 @@ const STR = {
     loginFailed: "Échec de la connexion. Vérifiez vos identifiants.",
     googleFailed: "Échec de la connexion Google.",
     prefers: "Préfère :",
+    appointment: "Date du rendez-vous",
+    reminderAuto: "E-mail de rappel envoyé automatiquement la veille",
+    reminderSent: "Rappel envoyé ✓",
     newCount: (n) => `${n} nouveaux`,
   },
 };
@@ -257,13 +263,23 @@ const AdminPage = () => {
   const setStatus = async (kind, id, status) => {
     try {
       if (kind === "booking") {
-        const { data } = await adminUpdateBooking(token, id, status);
+        const { data } = await adminUpdateBooking(token, id, { status });
         setBookings((prev) => prev.map((b) => (b.id === id ? data : b)));
       } else {
         const { data } = await adminUpdateEnquiry(token, id, status);
         setEnquiries((prev) => prev.map((b) => (b.id === id ? data : b)));
       }
       toast.success(t.markedAs(t[status] || status));
+    } catch {
+      toast.error(t.errUpdate);
+    }
+  };
+
+  const setAppointment = async (id, dateStr) => {
+    try {
+      const { data } = await adminUpdateBooking(token, id, { appointment_date: dateStr });
+      setBookings((prev) => prev.map((b) => (b.id === id ? data : b)));
+      toast.success(t.markedAs(dateStr || "—"));
     } catch {
       toast.error(t.errUpdate);
     }
@@ -494,6 +510,24 @@ const AdminPage = () => {
                     </span>
                     <span className="mono-label text-[#E67E22] self-center">{item.service_type}</span>
                     {item.preferred_date && <span className="text-[#A1A1AA]">{t.prefers} {item.preferred_date}</span>}
+                  </div>
+                )}
+                {tab === "bookings" && (
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <label className="mono-label text-[#52525B]">{t.appointment}</label>
+                    <input
+                      type="date"
+                      data-testid={`admin-appt-${item.id}`}
+                      value={item.appointment_date || ""}
+                      onChange={(e) => setAppointment(item.id, e.target.value)}
+                      className="input-industrial !w-auto !py-2"
+                      style={{ colorScheme: "dark" }}
+                    />
+                    {item.reminder_sent ? (
+                      <span className="mono-label text-emerald-400" data-testid={`admin-reminder-state-${item.id}`}>{t.reminderSent}</span>
+                    ) : item.appointment_date ? (
+                      <span className="mono-label text-[#A1A1AA]" data-testid={`admin-reminder-state-${item.id}`}>{t.reminderAuto}</span>
+                    ) : null}
                   </div>
                 )}
                 <p className="text-[#A1A1AA] text-sm leading-relaxed mb-6">{tab === "bookings" ? (item.notes || "—") : item.message}</p>
