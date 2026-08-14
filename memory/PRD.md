@@ -27,6 +27,7 @@ Scope change (2026-08-13): owner removed Custom Builds & Restoration as an offer
 - 2026-08-13: Removed Custom Builds & Restoration offering per owner request (services, marquee, booking form, gallery re-themed to repair work). Backend still accepts optional budget_range/project_vision (harmless legacy fields, unused by UI).
 - 2026-08-14: Hero stats changed to 2+ years / 500+ bikes; rating stat removed; Est. 2024 + "two years in" copy consistency fixes.
 - 2026-08-14: Private admin dashboard at /admin — JWT login (seeded admin from env), protected GET/PATCH/DELETE for bookings & enquiries, status workflow (new → contacted → done, reopen, delete), brute-force lockout (5 fails = 15 min), notification bell in admin header with badge count of new requests + dropdown that jumps to each request. Verified end-to-end (login, 401s, status updates, bell dropdown).
+- 2026-08-14: Google sign-in added alongside password login (Emergent-managed OAuth). Flow: "Continue with Google" → auth.emergentagent.com → back to /admin#session_id → POST /api/auth/session exchanges it backend-side → 7-day session token (Bearer, same localStorage key as JWT). Only the Google account matching ADMIN_EMAIL is allowed in (others get 403). Verified: fake session_id → 401, manual session token authenticates, OAuth redirect lands on real Google sign-in page. Full Google round-trip NOT tested (needs the owner's real Google account).
 
 ## Backlog
 - P0: Replace placeholder address/phone/hours/email with real business details (user to supply).

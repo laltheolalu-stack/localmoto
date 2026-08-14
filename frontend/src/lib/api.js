@@ -6,6 +6,8 @@ export const submitBooking = (data) => axios.post(`${API}/bookings`, data);
 export const submitEnquiry = (data) => axios.post(`${API}/enquiries`, data);
 
 export const adminLogin = (email, password) => axios.post(`${API}/auth/login`, { email, password });
+export const adminGoogleSession = (sessionId) => axios.post(`${API}/auth/session`, { session_id: sessionId });
+export const adminLogout = (token) => axios.post(`${API}/auth/logout`, {}, { headers: { Authorization: `Bearer ${token}` } });
 
 const authHeaders = (token) => ({ headers: { Authorization: `Bearer ${token}` } });
 

@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -14,6 +14,7 @@ from typing import List, Optional
 import uuid
 import bcrypt
 import jwt
+import httpx
 from datetime import datetime, timezone, timedelta
 
 mongo_url = os.environ['MONGO_URL']
@@ -26,6 +27,7 @@ api_router = APIRouter(prefix="/api")
 JWT_ALGORITHM = "HS256"
 LOCKOUT_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
+EMERGENT_SESSION_DATA_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
 
 
 def now_iso() -> str:
@@ -50,21 +52,40 @@ def create_access_token(user_id: str, email: str) -> str:
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=JWT_ALGORITHM)
 
 
+def public_user(user: dict) -> dict:
+    return {"id": user["id"], "email": user["email"], "name": user.get("name", "Admin"), "role": user.get("role", "admin")}
+
+
 async def get_current_user(request: Request) -> dict:
     auth_header = request.headers.get("Authorization", "")
-    token = auth_header[7:] if auth_header.startswith("Bearer ") else request.cookies.get("access_token")
+    token = auth_header[7:] if auth_header.startswith("Bearer ") else request.cookies.get("session_token")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
         payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
+        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    return user
+        pass
+
+    session = await db.user_sessions.find_one({"session_token": token})
+    if session:
+        expires_at = session["expires_at"]
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at)
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status_code=401, detail="Session expired")
+        user = await db.users.find_one({"id": session["user_id"]}, {"_id": 0, "password_hash": 0})
+        if user:
+            return user
+    raise HTTPException(status_code=401, detail="Invalid token")
 
 
 async def seed_admin():
@@ -133,6 +154,10 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class GoogleSessionRequest(BaseModel):
+    session_id: str = Field(min_length=1)
+
+
 class StatusUpdate(BaseModel):
     status: str = Field(pattern="^(new|contacted|done)$")
 
@@ -164,7 +189,48 @@ async def login(payload: LoginRequest, request: Request):
 
     await db.login_attempts.delete_one({"identifier": identifier})
     token = create_access_token(user["id"], email)
-    return {"token": token, "user": {"id": user["id"], "email": email, "name": user.get("name", "Admin"), "role": user.get("role", "admin")}}
+    return {"token": token, "user": public_user(user)}
+
+
+@api_router.post("/auth/session")
+async def create_google_session(payload: GoogleSessionRequest, response: Response):
+    async with httpx.AsyncClient(timeout=10) as http:
+        r = await http.get(EMERGENT_SESSION_DATA_URL, headers={"X-Session-ID": payload.session_id})
+    if r.status_code != 200:
+        raise HTTPException(status_code=401, detail="Invalid or expired Google session")
+
+    data = r.json()
+    email = data["email"].lower()
+    if email != os.environ["ADMIN_EMAIL"].lower():
+        raise HTTPException(status_code=403, detail="This Google account isn't authorised for the workshop admin.")
+
+    user = await db.users.find_one({"email": email})
+    if not user:
+        await seed_admin()
+        user = await db.users.find_one({"email": email})
+
+    session_token = data["session_token"]
+    await db.user_sessions.delete_many({"user_id": user["id"]})
+    await db.user_sessions.insert_one({
+        "user_id": user["id"],
+        "session_token": session_token,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+        "created_at": now_iso(),
+    })
+    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
+    return {"token": session_token, "user": public_user(user)}
+
+
+@api_router.post("/auth/logout")
+async def logout(request: Request, response: Response):
+    token = request.cookies.get("session_token")
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+    if token:
+        await db.user_sessions.delete_many({"session_token": token})
+    response.delete_cookie("session_token", path="/")
+    return {"message": "Logged out"}
 
 
 @api_router.get("/auth/me")
@@ -252,6 +318,7 @@ logger = logging.getLogger(__name__)
 async def startup():
     await db.users.create_index("email", unique=True)
     await db.login_attempts.create_index("identifier")
+    await db.user_sessions.create_index("session_token")
     await seed_admin()
 
 

@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Loader2, LogOut, Phone, Mail, Trash2, Bike, CalendarClock, Bell } from "lucide-react";
 import {
-  adminLogin, adminMe, adminGetBookings, adminGetEnquiries,
+  adminLogin, adminGoogleSession, adminLogout, adminMe, adminGetBookings, adminGetEnquiries,
   adminUpdateBooking, adminUpdateEnquiry, adminDeleteBooking, adminDeleteEnquiry,
 } from "@/lib/api";
 
@@ -22,6 +23,15 @@ const fmtDate = (iso) => {
     return iso;
   }
 };
+
+const GoogleMark = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.2 1.64l3.12-3.12C17.46 1.8 14.96.72 12 .72 7.44.72 3.52 3.4 1.76 7.28l3.66 2.84C6.32 7.14 8.9 5.04 12 5.04z" />
+    <path fill="#4285F4" d="M23.28 12.26c0-.92-.08-1.6-.26-2.3H12v4.34h6.44c-.13 1.08-.83 2.7-2.39 3.8l3.56 2.76c2.14-1.98 3.67-4.9 3.67-8.6z" />
+    <path fill="#FBBC05" d="M5.44 14.3a7.06 7.06 0 0 1 0-4.56L1.78 6.9a11.32 11.32 0 0 0 0 10.24l3.66-2.84z" />
+    <path fill="#34A853" d="M12 23.28c3.04 0 5.6-1 7.46-2.72l-3.56-2.76c-.95.64-2.23 1.1-3.9 1.1-3.1 0-5.68-2.1-6.58-4.9l-3.64 2.82c1.75 3.5 5.34 6.46 10.22 6.46z" />
+  </svg>
+);
 
 const StatusChip = ({ status, testid }) => (
   <span data-testid={testid} className={`mono-label px-3 py-1 border ${statusStyles[status] || statusStyles.new}`}>
@@ -44,12 +54,18 @@ const ActionButton = ({ onClick, testid, children, danger }) => (
 );
 
 const AdminPage = () => {
+  const location = useLocation();
+  const isOAuthCallback = location.hash?.includes("session_id=");
+  const oauthHandled = useRef(false);
+
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
   const [checking, setChecking] = useState(!!localStorage.getItem(TOKEN_KEY));
   const [authed, setAuthed] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [oauthError, setOauthError] = useState("");
+  const [oauthProcessing, setOauthProcessing] = useState(isOAuthCallback);
   const [sending, setSending] = useState(false);
   const [tab, setTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
@@ -58,6 +74,8 @@ const AdminPage = () => {
   const [showNotifs, setShowNotifs] = useState(false);
 
   const logout = useCallback(() => {
+    const t = localStorage.getItem(TOKEN_KEY);
+    if (t) adminLogout(t).catch(() => {});
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setAuthed(false);
@@ -76,6 +94,24 @@ const AdminPage = () => {
       setLoading(false);
     }
   }, [logout]);
+
+  useEffect(() => {
+    if (!isOAuthCallback || oauthHandled.current) return;
+    oauthHandled.current = true;
+    const sessionId = location.hash.split("session_id=")[1]?.split("&")[0];
+    adminGoogleSession(sessionId)
+      .then(({ data }) => {
+        localStorage.setItem(TOKEN_KEY, data.token);
+        window.history.replaceState(null, "", "/admin");
+        setToken(data.token);
+      })
+      .catch((err) => {
+        const detail = err.response?.data?.detail;
+        setOauthError(typeof detail === "string" ? detail : "Google sign-in failed.");
+        window.history.replaceState(null, "", "/admin");
+      })
+      .finally(() => setOauthProcessing(false));
+  }, [isOAuthCallback, location.hash]);
 
   useEffect(() => {
     const verify = async () => {
@@ -107,6 +143,12 @@ const AdminPage = () => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    const redirectUrl = window.location.origin + "/admin";
+    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   const setStatus = async (kind, id, status) => {
@@ -146,7 +188,7 @@ const AdminPage = () => {
     setTimeout(() => document.getElementById(`req-${n.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
   };
 
-  if (checking) {
+  if (oauthProcessing || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]" data-testid="admin-loading">
         <Loader2 size={28} className="animate-spin text-[#D35400]" />
@@ -182,6 +224,24 @@ const AdminPage = () => {
               {sending ? "Signing in…" : "Sign in"}
             </button>
           </form>
+
+          <div className="flex items-center gap-4 my-8">
+            <span className="h-px flex-1 bg-white/10" />
+            <span className="mono-label text-[#52525B]">or</span>
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <button
+            data-testid="admin-google-login"
+            onClick={handleGoogleLogin}
+            className="btn-ghost w-full"
+          >
+            <GoogleMark />
+            Continue with Google
+          </button>
+          {oauthError && <p className="text-red-400 text-sm mt-4" data-testid="admin-google-error">{oauthError}</p>}
+          <p className="text-[#52525B] text-xs mt-4 leading-relaxed">Google sign-in only works with the shop's registered admin email.</p>
+
           <a href="/" data-testid="admin-back-home" className="mono-label text-[#52525B] hover:text-[#E67E22] transition-colors duration-300 block mt-8">
             ← Back to the site
           </a>
