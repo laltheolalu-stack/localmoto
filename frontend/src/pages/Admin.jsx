@@ -2,13 +2,95 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Loader2, LogOut, Phone, Mail, Trash2, Bike, CalendarClock, Bell } from "lucide-react";
+import { Loader2, LogOut, Phone, Mail, Trash2, Bike, CalendarClock, Bell, Globe } from "lucide-react";
 import {
   adminLogin, adminGoogleSession, adminLogout, adminMe, adminGetBookings, adminGetEnquiries,
   adminUpdateBooking, adminUpdateEnquiry, adminDeleteBooking, adminDeleteEnquiry,
 } from "@/lib/api";
 
 const TOKEN_KEY = "lm_admin_token";
+const LANG_KEY = "lm_admin_lang";
+
+const STR = {
+  en: {
+    workshopAdmin: "Workshop admin",
+    email: "Email",
+    password: "Password",
+    signIn: "Sign in",
+    signingIn: "Signing in…",
+    or: "or",
+    google: "Continue with Google",
+    googleNote: "Google sign-in only works with the shop's registered admin email.",
+    backHome: "← Back to the site",
+    bookings: "Bookings",
+    enquiries: "Enquiries",
+    bookingKind: "booking",
+    enquiryKind: "enquiry",
+    refresh: "Refresh",
+    loading: "Loading…",
+    nothingHere: "Nothing here yet",
+    nothingSub: (tab) => `New ${tab} from the website will show up here.`,
+    newRequests: "New requests",
+    allCaughtUp: "All caught up — nothing new.",
+    logOut: "Log out",
+    new: "new",
+    contacted: "contacted",
+    done: "done",
+    markContacted: "Mark contacted",
+    markDone: "Mark done",
+    reopen: "Reopen",
+    deleteLabel: "Delete",
+    confirmDelete: "Delete this request for good?",
+    markedAs: (s) => `Marked as ${s}.`,
+    deleted: "Deleted.",
+    errUpdate: "Couldn't update that — try again.",
+    errDelete: "Couldn't delete that — try again.",
+    errLoad: "Couldn't load the latest requests.",
+    loginFailed: "Login failed. Check your details.",
+    googleFailed: "Google sign-in failed.",
+    prefers: "Prefers:",
+    newCount: (n) => `${n} new`,
+  },
+  fr: {
+    workshopAdmin: "Administration atelier",
+    email: "E-mail",
+    password: "Mot de passe",
+    signIn: "Se connecter",
+    signingIn: "Connexion…",
+    or: "ou",
+    google: "Continuer avec Google",
+    googleNote: "La connexion Google ne fonctionne qu'avec l'adresse e-mail admin enregistrée de l'atelier.",
+    backHome: "← Retour au site",
+    bookings: "Réservations",
+    enquiries: "Demandes",
+    bookingKind: "réservation",
+    enquiryKind: "demande",
+    refresh: "Actualiser",
+    loading: "Chargement…",
+    nothingHere: "Rien ici pour le moment",
+    nothingSub: (tab) => `Les nouvelles ${tab === "bookings" ? "réservations" : "demandes"} du site apparaîtront ici.`,
+    newRequests: "Nouvelles demandes",
+    allCaughtUp: "Tout est à jour — rien de nouveau.",
+    logOut: "Se déconnecter",
+    new: "nouveau",
+    contacted: "contacté",
+    done: "terminé",
+    markContacted: "Marquer contacté",
+    markDone: "Marquer terminé",
+    reopen: "Rouvrir",
+    deleteLabel: "Supprimer",
+    confirmDelete: "Supprimer définitivement cette demande ?",
+    markedAs: (s) => `Marqué comme ${s}.`,
+    deleted: "Supprimé.",
+    errUpdate: "Impossible de mettre à jour — réessayez.",
+    errDelete: "Impossible de supprimer — réessayez.",
+    errLoad: "Impossible de charger les dernières demandes.",
+    loginFailed: "Échec de la connexion. Vérifiez vos identifiants.",
+    googleFailed: "Échec de la connexion Google.",
+    prefers: "Préfère :",
+    newCount: (n) => `${n} nouveaux`,
+  },
+};
 
 const statusStyles = {
   new: "border-[#D35400] text-[#E67E22] bg-[#D35400]/10",
@@ -33,9 +115,21 @@ const GoogleMark = () => (
   </svg>
 );
 
-const StatusChip = ({ status, testid }) => (
+const LangToggle = ({ lang, onToggle, testid }) => (
+  <button
+    data-testid={testid}
+    onClick={onToggle}
+    aria-label="Switch language"
+    className="mono-label flex items-center gap-2 text-[#A1A1AA] hover:text-[#E67E22] border border-white/20 hover:border-[#D35400] px-3 py-2 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
+  >
+    <Globe size={14} />
+    {lang === "en" ? "FR" : "EN"}
+  </button>
+);
+
+const StatusChip = ({ status, t, testid }) => (
   <span data-testid={testid} className={`mono-label px-3 py-1 border ${statusStyles[status] || statusStyles.new}`}>
-    {status}
+    {t[status] || status}
   </span>
 );
 
@@ -72,24 +166,33 @@ const AdminPage = () => {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
+  const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY) || "en");
+
+  const t = STR[lang];
+
+  const toggleLang = () => {
+    const next = lang === "en" ? "fr" : "en";
+    setLang(next);
+    localStorage.setItem(LANG_KEY, next);
+  };
 
   const logout = useCallback(() => {
-    const t = localStorage.getItem(TOKEN_KEY);
-    if (t) adminLogout(t).catch(() => {});
+    const tk = localStorage.getItem(TOKEN_KEY);
+    if (tk) adminLogout(tk).catch(() => {});
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setAuthed(false);
   }, []);
 
-  const loadData = useCallback(async (t) => {
+  const loadData = useCallback(async (tk) => {
     setLoading(true);
     try {
-      const [b, e] = await Promise.all([adminGetBookings(t), adminGetEnquiries(t)]);
+      const [b, e] = await Promise.all([adminGetBookings(tk), adminGetEnquiries(tk)]);
       setBookings(b.data);
       setEnquiries(e.data);
     } catch (err) {
       if (err.response?.status === 401) logout();
-      else toast.error("Couldn't load the latest requests.");
+      else toast.error(STR[localStorage.getItem(LANG_KEY) || "en"].errLoad);
     } finally {
       setLoading(false);
     }
@@ -107,7 +210,7 @@ const AdminPage = () => {
       })
       .catch((err) => {
         const detail = err.response?.data?.detail;
-        setOauthError(typeof detail === "string" ? detail : "Google sign-in failed.");
+        setOauthError(typeof detail === "string" ? detail : STR[localStorage.getItem(LANG_KEY) || "en"].googleFailed);
         window.history.replaceState(null, "", "/admin");
       })
       .finally(() => setOauthProcessing(false));
@@ -139,7 +242,7 @@ const AdminPage = () => {
       setToken(data.token);
     } catch (err) {
       const detail = err.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Login failed. Check your details.");
+      setError(typeof detail === "string" ? detail : t.loginFailed);
     } finally {
       setSending(false);
     }
@@ -160,14 +263,14 @@ const AdminPage = () => {
         const { data } = await adminUpdateEnquiry(token, id, status);
         setEnquiries((prev) => prev.map((b) => (b.id === id ? data : b)));
       }
-      toast.success(`Marked as ${status}.`);
+      toast.success(t.markedAs(t[status] || status));
     } catch {
-      toast.error("Couldn't update that — try again.");
+      toast.error(t.errUpdate);
     }
   };
 
   const remove = async (kind, id) => {
-    if (!window.confirm("Delete this request for good?")) return;
+    if (!window.confirm(t.confirmDelete)) return;
     try {
       if (kind === "booking") {
         await adminDeleteBooking(token, id);
@@ -176,9 +279,9 @@ const AdminPage = () => {
         await adminDeleteEnquiry(token, id);
         setEnquiries((prev) => prev.filter((b) => b.id !== id));
       }
-      toast.success("Deleted.");
+      toast.success(t.deleted);
     } catch {
-      toast.error("Couldn't delete that — try again.");
+      toast.error(t.errDelete);
     }
   };
 
@@ -203,31 +306,34 @@ const AdminPage = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md bg-[#121212] border border-white/10 p-10"
+          className="relative w-full max-w-md bg-[#121212] border border-white/10 p-10"
         >
+          <div className="absolute top-5 right-5">
+            <LangToggle lang={lang} onToggle={toggleLang} testid="admin-lang-toggle" />
+          </div>
           <p className="font-display text-3xl text-[#F5F5F5] mb-1">LOCAL<span className="text-[#D35400]">MOTO</span></p>
-          <p className="mono-label text-[#52525B] mb-10">Workshop admin</p>
+          <p className="mono-label text-[#52525B] mb-10">{t.workshopAdmin}</p>
           <form onSubmit={handleLogin} className="flex flex-col gap-6" data-testid="admin-login-form">
             <div>
-              <label htmlFor="admin-email" className="mono-label text-[#52525B] block mb-3">Email</label>
+              <label htmlFor="admin-email" className="mono-label text-[#52525B] block mb-3">{t.email}</label>
               <input id="admin-email" data-testid="admin-email-input" type="email" required className="input-industrial" placeholder="admin@localmoto.co.uk"
                 value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div>
-              <label htmlFor="admin-password" className="mono-label text-[#52525B] block mb-3">Password</label>
+              <label htmlFor="admin-password" className="mono-label text-[#52525B] block mb-3">{t.password}</label>
               <input id="admin-password" data-testid="admin-password-input" type="password" required className="input-industrial" placeholder="••••••••"
                 value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             {error && <p className="text-red-400 text-sm" data-testid="admin-login-error">{error}</p>}
             <button type="submit" data-testid="admin-login-submit" disabled={sending} className="btn-accent w-full disabled:opacity-60">
               {sending ? <Loader2 size={16} className="animate-spin" /> : null}
-              {sending ? "Signing in…" : "Sign in"}
+              {sending ? t.signingIn : t.signIn}
             </button>
           </form>
 
           <div className="flex items-center gap-4 my-8">
             <span className="h-px flex-1 bg-white/10" />
-            <span className="mono-label text-[#52525B]">or</span>
+            <span className="mono-label text-[#52525B]">{t.or}</span>
             <span className="h-px flex-1 bg-white/10" />
           </div>
 
@@ -237,13 +343,13 @@ const AdminPage = () => {
             className="btn-ghost w-full"
           >
             <GoogleMark />
-            Continue with Google
+            {t.google}
           </button>
           {oauthError && <p className="text-red-400 text-sm mt-4" data-testid="admin-google-error">{oauthError}</p>}
-          <p className="text-[#52525B] text-xs mt-4 leading-relaxed">Google sign-in only works with the shop's registered admin email.</p>
+          <p className="text-[#52525B] text-xs mt-4 leading-relaxed">{t.googleNote}</p>
 
           <a href="/" data-testid="admin-back-home" className="mono-label text-[#52525B] hover:text-[#E67E22] transition-colors duration-300 block mt-8">
-            ← Back to the site
+            {t.backHome}
           </a>
         </motion.div>
       </div>
@@ -265,9 +371,10 @@ const AdminPage = () => {
       <header className="border-b border-white/10 bg-black/60 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 h-[72px] flex items-center justify-between">
           <p className="font-display text-2xl text-[#F5F5F5]">LOCAL<span className="text-[#D35400]">MOTO</span>
-            <span className="mono-label text-[#52525B] ml-4 hidden sm:inline">Workshop admin</span>
+            <span className="mono-label text-[#52525B] ml-4 hidden sm:inline">{t.workshopAdmin}</span>
           </p>
           <div className="flex items-center gap-4">
+            <LangToggle lang={lang} onToggle={toggleLang} testid="admin-lang-toggle-dashboard" />
             <div className="relative">
               <button
                 data-testid="admin-notif-bell"
@@ -292,9 +399,9 @@ const AdminPage = () => {
                     data-testid="admin-notif-panel"
                     className="absolute right-0 top-12 z-50 w-80 bg-[#121212] border border-white/10 max-h-[60vh] overflow-y-auto"
                   >
-                    <p className="mono-label text-[#52525B] px-5 py-4 border-b border-white/10">New requests</p>
+                    <p className="mono-label text-[#52525B] px-5 py-4 border-b border-white/10">{t.newRequests}</p>
                     {newItems.length === 0 ? (
-                      <p className="text-[#A1A1AA] text-sm px-5 py-6" data-testid="admin-notif-empty">All caught up — nothing new.</p>
+                      <p className="text-[#A1A1AA] text-sm px-5 py-6" data-testid="admin-notif-empty">{t.allCaughtUp}</p>
                     ) : (
                       newItems.map((n) => (
                         <button
@@ -303,7 +410,7 @@ const AdminPage = () => {
                           onClick={() => jumpTo(n)}
                           className="w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
                         >
-                          <span className="mono-label text-[#E67E22]">{n.kind}</span>
+                          <span className="mono-label text-[#E67E22]">{n.kind === "booking" ? t.bookingKind : t.enquiryKind}</span>
                           <span className="block text-sm text-[#F5F5F5] mt-1">
                             {n.name}{n.kind === "booking" ? ` — ${n.bike_model}` : ""}
                           </span>
@@ -317,7 +424,7 @@ const AdminPage = () => {
             </div>
             <button data-testid="admin-logout-button" onClick={logout}
               className="mono-label text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors duration-300 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]">
-              <LogOut size={14} /> Log out
+              <LogOut size={14} /> {t.logOut}
             </button>
           </div>
         </div>
@@ -328,23 +435,23 @@ const AdminPage = () => {
           <div className="flex gap-px bg-white/10 border border-white/10 w-fit" role="tablist">
             <button data-testid="admin-tab-bookings" role="tab" aria-selected={tab === "bookings"} onClick={() => setTab("bookings")}
               className={`mono-label px-6 py-3 transition-colors duration-300 ${tab === "bookings" ? "bg-[#D35400] text-[#F5F5F5]" : "bg-[#0A0A0A] text-[#A1A1AA] hover:text-[#F5F5F5]"}`}>
-              Bookings ({bookings.length})
+              {t.bookings} ({bookings.length})
             </button>
             <button data-testid="admin-tab-enquiries" role="tab" aria-selected={tab === "enquiries"} onClick={() => setTab("enquiries")}
               className={`mono-label px-6 py-3 transition-colors duration-300 ${tab === "enquiries" ? "bg-[#D35400] text-[#F5F5F5]" : "bg-[#0A0A0A] text-[#A1A1AA] hover:text-[#F5F5F5]"}`}>
-              Enquiries ({enquiries.length})
+              {t.enquiries} ({enquiries.length})
             </button>
           </div>
           <button data-testid="admin-refresh-button" onClick={() => loadData(token)}
             className="mono-label text-[#A1A1AA] hover:text-[#E67E22] border border-white/20 hover:border-[#D35400] px-4 py-2.5 transition-colors duration-300">
-            {loading ? "Loading…" : "Refresh"}
+            {loading ? t.loading : t.refresh}
           </button>
         </div>
 
         {items.length === 0 ? (
           <div className="border border-white/10 bg-[#121212] p-16 text-center" data-testid="admin-empty-state">
-            <p className="font-display text-3xl text-[#52525B] uppercase">Nothing here yet</p>
-            <p className="text-[#A1A1AA] text-sm mt-3">New {tab} from the website will show up here.</p>
+            <p className="font-display text-3xl text-[#52525B] uppercase">{t.nothingHere}</p>
+            <p className="text-[#A1A1AA] text-sm mt-3">{t.nothingSub(tab)}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -377,7 +484,7 @@ const AdminPage = () => {
                       </span>
                     </div>
                   </div>
-                  <StatusChip status={item.status} testid={`admin-item-status-${item.id}`} />
+                  <StatusChip status={item.status} t={t} testid={`admin-item-status-${item.id}`} />
                 </div>
 
                 {tab === "bookings" && (
@@ -386,7 +493,7 @@ const AdminPage = () => {
                       <Bike size={14} className="text-[#D35400]" /> {item.bike_model}
                     </span>
                     <span className="mono-label text-[#E67E22] self-center">{item.service_type}</span>
-                    {item.preferred_date && <span className="text-[#A1A1AA]">Prefers: {item.preferred_date}</span>}
+                    {item.preferred_date && <span className="text-[#A1A1AA]">{t.prefers} {item.preferred_date}</span>}
                   </div>
                 )}
                 <p className="text-[#A1A1AA] text-sm leading-relaxed mb-6">{tab === "bookings" ? (item.notes || "—") : item.message}</p>
@@ -394,21 +501,21 @@ const AdminPage = () => {
                 <div className="flex flex-wrap gap-2">
                   {item.status !== "contacted" && item.status !== "done" && (
                     <ActionButton testid={`admin-mark-contacted-${item.id}`} onClick={() => setStatus(tab === "bookings" ? "booking" : "enquiry", item.id, "contacted")}>
-                      Mark contacted
+                      {t.markContacted}
                     </ActionButton>
                   )}
                   {item.status !== "done" && (
                     <ActionButton testid={`admin-mark-done-${item.id}`} onClick={() => setStatus(tab === "bookings" ? "booking" : "enquiry", item.id, "done")}>
-                      Mark done
+                      {t.markDone}
                     </ActionButton>
                   )}
                   {item.status !== "new" && (
                     <ActionButton testid={`admin-mark-new-${item.id}`} onClick={() => setStatus(tab === "bookings" ? "booking" : "enquiry", item.id, "new")}>
-                      Reopen
+                      {t.reopen}
                     </ActionButton>
                   )}
                   <ActionButton danger testid={`admin-delete-${item.id}`} onClick={() => remove(tab === "bookings" ? "booking" : "enquiry", item.id)}>
-                    <span className="flex items-center gap-1.5"><Trash2 size={12} /> Delete</span>
+                    <span className="flex items-center gap-1.5"><Trash2 size={12} /> {t.deleteLabel}</span>
                   </ActionButton>
                 </div>
               </motion.article>
