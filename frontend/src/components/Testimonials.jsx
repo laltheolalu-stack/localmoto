@@ -16,7 +16,7 @@ const quotes = [
   {
     text: "My dad's old CB550 came back better than new. They treated it like it was theirs. Can't recommend them enough.",
     name: "Marcus T.",
-    bike: "Honda CB550 (restoration)",
+    bike: "Honda CB550 (engine rebuild)",
   },
 ];
 

@@ -5,8 +5,6 @@ const items = [
   "Servicing",
   "MOT & Inspection",
   "Tyres",
-  "Custom Builds",
-  "Restoration",
   "Diagnostics",
 ];
 

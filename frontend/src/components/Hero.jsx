@@ -47,7 +47,7 @@ const Hero = () => {
             className="mono-label text-[#D35400]"
             data-testid="hero-kicker"
           >
-            Motorcycle Repair & Restoration — Est. 2012
+            Motorcycle Repair & Servicing — Est. 2012
           </motion.p>
         </div>
 
@@ -74,8 +74,8 @@ const Hero = () => {
             data-testid="hero-subcopy"
           >
             A small, independent workshop keeping local riders on the road. Honest
-            repairs, proper servicing, MOT prep, tyres — and the occasional full
-            custom build.
+            repairs, proper servicing, MOT prep and tyres — done right, priced
+            straight.
           </motion.p>
         </div>
 

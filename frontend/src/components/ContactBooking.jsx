@@ -10,10 +10,9 @@ const serviceTypes = [
   "Servicing & Maintenance",
   "MOT & Inspection",
   "Tyres & Fitting",
-  "Custom Build / Restoration",
 ];
 
-const emptyBooking = { name: "", phone: "", email: "", bike_model: "", service_type: "", preferred_date: "", notes: "", budget_range: "", project_vision: "" };
+const emptyBooking = { name: "", phone: "", email: "", bike_model: "", service_type: "", preferred_date: "", notes: "" };
 const emptyEnquiry = { name: "", email: "", message: "" };
 
 const ContactBooking = () => {
@@ -26,7 +25,7 @@ const ContactBooking = () => {
     e.preventDefault();
     setSending(true);
     try {
-      const payload = { ...booking, email: booking.email || null, preferred_date: booking.preferred_date || null, notes: booking.notes || null, budget_range: booking.budget_range || null, project_vision: booking.project_vision || null };
+      const payload = { ...booking, email: booking.email || null, preferred_date: booking.preferred_date || null, notes: booking.notes || null };
       await submitBooking(payload);
       toast.success("Booking request received. We'll ring you back within one working day.");
       setBooking(emptyBooking);
@@ -175,51 +174,6 @@ const ContactBooking = () => {
                 </div>
                 <input type="text" className="hidden" required value={booking.service_type} readOnly data-testid="booking-service-required" />
               </div>
-
-              {booking.service_type === "Custom Build / Restoration" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="border border-[#D35400]/40 bg-[#D35400]/5 p-6 overflow-hidden"
-                  data-testid="custom-quote-panel"
-                >
-                  <p className="font-display uppercase text-2xl text-[#F5F5F5] mb-2">Custom quote — tell us the dream</p>
-                  <p className="text-[#A1A1AA] text-sm leading-relaxed mb-6">
-                    Every build starts with a brew and a chat in the workshop. Give us a
-                    rough budget and the idea in your head — we'll come back with a plan,
-                    a timeline and a straight price.
-                  </p>
-                  <span className="mono-label text-[#52525B] block mb-3">Rough budget</span>
-                  <div className="flex flex-wrap gap-2 mb-6" data-testid="budget-chips">
-                    {["Under £2k", "£2k – £5k", "£5k – £10k", "£10k+"].map((b) => (
-                      <button
-                        key={b}
-                        type="button"
-                        data-testid={`budget-chip-${b.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
-                        onClick={() => setBooking({ ...booking, budget_range: b })}
-                        className={`mono-label px-4 py-2.5 border transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400] ${
-                          booking.budget_range === b
-                            ? "border-[#D35400] text-[#E67E22] bg-[#D35400]/10"
-                            : "border-white/20 text-[#A1A1AA] hover:border-white/40 hover:text-[#F5F5F5]"
-                        }`}
-                      >
-                        {b}
-                      </button>
-                    ))}
-                  </div>
-                  <label htmlFor="bk-vision" className="mono-label text-[#52525B] block mb-3">Project vision</label>
-                  <textarea
-                    id="bk-vision"
-                    data-testid="booking-vision-input"
-                    rows={3}
-                    className="input-industrial resize-none"
-                    placeholder="Café racer stance, clip-ons, blacked-out engine, brass details…"
-                    value={booking.project_vision}
-                    onChange={(e) => setBooking({ ...booking, project_vision: e.target.value })}
-                  />
-                </motion.div>
-              )}
               <div>
                 <label htmlFor="bk-date" className="mono-label text-[#52525B] block mb-3">Preferred date / time</label>
                 <input id="bk-date" data-testid="booking-date-input" className="input-industrial" placeholder="e.g. Any weekday morning next week"

@@ -5,7 +5,9 @@
 
 User choices: showcase + working contact form + service booking request form; services = repairs, maintenance, tyres, MOT/inspection, custom work; vibe = dark garage/workshop + vintage retro. Real business details to be supplied later (placeholders in use).
 
-Follow-up requests (2026-08-13): gallery focused on high-end custom work with deep shadows and mechanical details; booking form must have a clear custom-quote path; main headings fade in / track out on scroll.
+Follow-up requests (2026-08-13): gallery with deep shadows and mechanical details; main headings fade in / track out on scroll.
+
+Scope change (2026-08-13): owner removed Custom Builds & Restoration as an offered service — removed from services grid, marquee, booking form (incl. custom-quote panel), hero copy and testimonial; gallery re-themed from "custom work" to general workshop/repair frames. Backend still accepts optional budget_range/project_vision (harmless legacy fields, unused by UI).
 
 ## Architecture
 - Frontend: React (CRA/craco), Tailwind, framer-motion (scroll reveals, kinetic hero, scroll-linked heading tracking), lenis (momentum scroll), react-fast-marquee (editorial ribbon), sonner toasts.

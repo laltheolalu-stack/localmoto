@@ -1,11 +1,9 @@
 import { motion } from "framer-motion";
-import { Wrench, Gauge, ClipboardCheck, Disc3, Flame } from "lucide-react";
+import { Wrench, Gauge, ClipboardCheck, Disc3 } from "lucide-react";
 import TrackedHeading from "@/components/TrackedHeading";
 
 const TOOLS_IMG =
   "https://images.unsplash.com/photo-1514443031610-8c063c7a9822?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHwzfHxkYXJrJTIwYXRtb3NwaGVyaWMlMjBnYXJhZ2UlMjB0b29sc3xlbnwwfHx8fDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85";
-const CRUISER_IMG =
-  "https://images.unsplash.com/photo-1568708167243-438efa1d7697?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwzfHxjdXN0b20lMjByZXRybyUyMG1vdG9yY3ljbGUlMjBzdHVkaW98ZW58MHx8fHwxNzg2NjUzMjM1fDA&ixlib=rb-4.1.0&q=85";
 
 const services = [
   {
@@ -14,7 +12,6 @@ const services = [
     title: "Repairs & Diagnostics",
     desc: "From electrical gremlins to engine rebuilds. We find the real fault, explain it in plain English, and fix it properly the first time.",
     img: TOOLS_IMG,
-    wide: true,
   },
   {
     n: "02",
@@ -34,14 +31,6 @@ const services = [
     title: "Tyres & Fitting",
     desc: "Road, sport and classic rubber supplied and fitted with proper balancing. Ride in, ride out the same day.",
   },
-  {
-    n: "05",
-    icon: Flame,
-    title: "Custom Builds & Restoration",
-    desc: "Café racers, brats and full nut-and-bolt restorations. Bring us a basket case, ride away on something no one else has.",
-    img: CRUISER_IMG,
-    wide: true,
-  },
 ];
 
 const cardMotion = (i) => ({
@@ -59,7 +48,7 @@ const Services = () => {
           <div>
             <p className="mono-label text-[#D35400] mb-5" data-testid="services-kicker">What we do</p>
             <TrackedHeading className="text-5xl md:text-7xl" data-testid="services-heading">
-              Five things.<br />
+              Four things.<br />
               <span className="text-stroke">Done right.</span>
             </TrackedHeading>
           </div>
