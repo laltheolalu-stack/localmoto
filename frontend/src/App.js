@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "@/App.css";
 import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/Header";
@@ -11,6 +12,23 @@ import Gallery from "@/components/Gallery";
 import Testimonials from "@/components/Testimonials";
 import ContactBooking from "@/components/ContactBooking";
 import Footer from "@/components/Footer";
+import AdminPage from "@/pages/Admin";
+
+const Landing = () => (
+  <>
+    <Header />
+    <main>
+      <Hero />
+      <EditorialMarquee />
+      <Services />
+      <Manifesto />
+      <Gallery />
+      <Testimonials />
+      <ContactBooking />
+    </main>
+    <Footer />
+  </>
+);
 
 function App() {
   useEffect(() => {
@@ -32,17 +50,12 @@ function App() {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F5F5] min-h-screen" data-testid="app-root">
       <div className="noise-overlay" aria-hidden="true" />
-      <Header />
-      <main>
-        <Hero />
-        <EditorialMarquee />
-        <Services />
-        <Manifesto />
-        <Gallery />
-        <Testimonials />
-        <ContactBooking />
-      </main>
-      <Footer />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </BrowserRouter>
       <Toaster position="bottom-right" theme="dark" />
     </div>
   );

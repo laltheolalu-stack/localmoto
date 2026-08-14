@@ -24,6 +24,9 @@ Scope change (2026-08-13): owner removed Custom Builds & Restoration as an offer
 
 ## Implemented
 - 2026-08-13: Full site (hero, marquee, services, manifesto, gallery, testimonials, contact/booking, footer); backend bookings + enquiries stored in MongoDB; scroll-linked tracked headings; custom-quote panel with budget chips + project vision; verified end-to-end (curl + browser form submission with toasts).
+- 2026-08-13: Removed Custom Builds & Restoration offering per owner request (services, marquee, booking form, gallery re-themed to repair work). Backend still accepts optional budget_range/project_vision (harmless legacy fields, unused by UI).
+- 2026-08-14: Hero stats changed to 2+ years / 500+ bikes; rating stat removed; Est. 2024 + "two years in" copy consistency fixes.
+- 2026-08-14: Private admin dashboard at /admin — JWT login (seeded admin from env), protected GET/PATCH/DELETE for bookings & enquiries, status workflow (new → contacted → done, reopen, delete), brute-force lockout (5 fails = 15 min), notification bell in admin header with badge count of new requests + dropdown that jumps to each request. Verified end-to-end (login, 401s, status updates, bell dropdown).
 
 ## Backlog
 - P0: Replace placeholder address/phone/hours/email with real business details (user to supply).
