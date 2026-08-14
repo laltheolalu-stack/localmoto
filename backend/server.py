@@ -166,6 +166,29 @@ def _notif_html(title: str, rows) -> str:
     )
 
 
+def _customer_html(title: str, name: str, rows) -> str:
+    return (
+        '<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif">'
+        f'<h2 style="margin:0 0 16px;font-family:Arial,sans-serif">{escape(title)}</h2>'
+        f'<p style="font-family:Arial,sans-serif;font-size:14px;color:#111">Thanks {escape(name)} — your request is in. '
+        "Here's what you sent us:</p>"
+        + _notif_table(rows)
+        + '<p style="font-family:Arial,sans-serif;font-size:14px;color:#111;margin-top:16px">'
+          "We'll be in touch within one working day.</p>"
+        + f'<p style="font-size:12px;color:#888;margin-top:24px">Sent by {escape(EMAIL_FROM_NAME)}. '
+          'We never ask for passwords or card details by email.</p>'
+          '</td></tr></table>'
+    )
+
+
+async def notify_customer(to: str, subject: str, html: str) -> None:
+    try:
+        await send_email(to=to, subject=subject, html=html, reply_to=NOTIFY_EMAILS[0] if NOTIFY_EMAILS else None)
+        logger.info("Confirmation email sent to %s", to)
+    except Exception as e:
+        logger.error("Confirmation email to %s failed: %s", to, e)
+
+
 async def notify_all(subject: str, html: str, reply_to: str | None = None) -> None:
     for to in NOTIFY_EMAILS:
         try:
@@ -405,6 +428,13 @@ async def create_enquiry(payload: EnquiryCreate):
         ]),
         reply_to=enquiry.email,
     ))
+    asyncio.create_task(notify_customer(
+        enquiry.email,
+        "We've got your message — Local Moto",
+        _customer_html("Message received", enquiry.name, [
+            ("Message", enquiry.message),
+        ]),
+    ))
     return enquiry
 
 
@@ -450,6 +480,17 @@ async def create_booking(payload: BookingCreate):
         ]),
         reply_to=booking.email,
     ))
+    if booking.email:
+        asyncio.create_task(notify_customer(
+            booking.email,
+            "We've got your booking request — Local Moto",
+            _customer_html("Booking request received", booking.name, [
+                ("Bike", booking.bike_model),
+                ("Service", booking.service_type),
+                ("Preferred", booking.preferred_date),
+                ("Notes", booking.notes),
+            ]),
+        ))
     return booking
 
 
