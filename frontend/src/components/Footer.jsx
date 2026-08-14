@@ -41,9 +41,7 @@ const Footer = () => {
         transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
         className="px-6 lg:px-12"
       >
-        <p className="font-display uppercase text-[16vw] leading-[0.8] text-stroke text-center select-none" data-testid="footer-wordmark">
-          Local Moto
-        </p>
+        <img src="/logo.png" alt="Local Moto" className="w-full max-w-4xl mx-auto select-none" data-testid="footer-wordmark" />
       </motion.div>
 
       <div className="border-t border-white/10 mt-[-1vw] relative bg-[#050505]">

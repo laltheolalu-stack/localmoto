@@ -62,9 +62,9 @@ const Header = () => {
         <button
           data-testid="header-logo"
           onClick={() => window.__lenis?.scrollTo(0)}
-          className="font-display text-2xl tracking-wide text-[#F5F5F5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
         >
-          LOCAL<span className="text-[#D35400]">MOTO</span>
+          <img src="/logo.png" alt="Local Moto" className="h-10 w-auto" />
         </button>
 
         <nav className="hidden md:flex items-center gap-8" data-testid="header-nav">

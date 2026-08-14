@@ -327,7 +327,7 @@ const AdminPage = () => {
           <div className="absolute top-5 right-5">
             <LangToggle lang={lang} onToggle={toggleLang} testid="admin-lang-toggle" />
           </div>
-          <p className="font-display text-3xl text-[#F5F5F5] mb-1">LOCAL<span className="text-[#D35400]">MOTO</span></p>
+          <img src="/logo.png" alt="Local Moto" className="h-12 w-auto mb-2" data-testid="admin-login-logo" />
           <p className="mono-label text-[#52525B] mb-10">{t.workshopAdmin}</p>
           <form onSubmit={handleLogin} className="flex flex-col gap-6" data-testid="admin-login-form">
             <div>
@@ -386,9 +386,10 @@ const AdminPage = () => {
     <div className="min-h-screen bg-[#0A0A0A]" data-testid="admin-dashboard">
       <header className="border-b border-white/10 bg-black/60 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 h-[72px] flex items-center justify-between">
-          <p className="font-display text-2xl text-[#F5F5F5]">LOCAL<span className="text-[#D35400]">MOTO</span>
-            <span className="mono-label text-[#52525B] ml-4 hidden sm:inline">{t.workshopAdmin}</span>
-          </p>
+          <div className="flex items-center gap-4">
+            <img src="/logo.png" alt="Local Moto" className="h-8 w-auto" data-testid="admin-header-logo" />
+            <span className="mono-label text-[#52525B] hidden sm:inline">{t.workshopAdmin}</span>
+          </div>
           <div className="flex items-center gap-4">
             <LangToggle lang={lang} onToggle={toggleLang} testid="admin-lang-toggle-dashboard" />
             <div className="relative">
