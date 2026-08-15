@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Star } from "lucide-react";
 import TrackedHeading from "@/components/TrackedHeading";
 import { useLang } from "@/lib/site-lang";
 
@@ -12,7 +13,7 @@ const Testimonials = () => {
           {t.testimonials.h1} <span className="text-stroke">{t.testimonials.h2}</span>
         </TrackedHeading>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-white/10 border border-white/10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-white/10 border border-white/10">
           {t.testimonials.quotes.map((q, i) => (
             <motion.blockquote
               key={q.name}
@@ -24,13 +25,21 @@ const Testimonials = () => {
               data-testid={`testimonial-${i + 1}`}
             >
               <div>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex gap-1" aria-label="5 star review" data-testid={`testimonial-stars-${i + 1}`}>
+                    {[...Array(5)].map((_, s) => (
+                      <Star key={s} size={14} className="fill-[#F39C12] text-[#F39C12]" />
+                    ))}
+                  </div>
+                  <span className="mono-label text-[#52525B]">{t.testimonials.googleLabel}</span>
+                </div>
                 <p className="font-editorial italic text-xl md:text-2xl text-[#F5F5F5] leading-snug">
                   “{q.text}”
                 </p>
               </div>
               <footer className="mt-10">
                 <p className="mono-label text-[#F5F5F5]">{q.name}</p>
-                <p className="mono-label text-[#52525B] mt-1">{q.bike}</p>
+                <p className="mono-label text-[#52525B] mt-1">{q.meta}</p>
               </footer>
             </motion.blockquote>
           ))}

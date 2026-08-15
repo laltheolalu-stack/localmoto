@@ -53,10 +53,10 @@ const STR = {
       kicker: "Word on the street",
       h1: "Riders",
       h2: "talk.",
+      googleLabel: "Google review",
       quotes: [
-        { text: "Two garages told me the engine was scrap. Local Moto had it running sweeter than the day I bought it — for less than either quote.", name: "Dan R.", bike: "Triumph Street Twin" },
-        { text: "They photographed every worn part, talked me through each one, and gave me the old bits back in a box. Never had that from a dealer.", name: "Priya S.", bike: "Yamaha MT-07" },
-        { text: "My dad's old CB550 came back better than new. They treated it like it was theirs. Can't recommend them enough.", name: "Marcus T.", bike: "Honda CB550 (engine rebuild)" },
+        { text: "Excellent service! True experts! Thank you so much!", name: "Mélissa Jérôme", meta: "Local Guide · 28 reviews · 6 months ago" },
+        { text: "My motorcycle is running like a dream. Super fast service and a highly competent mechanic full of great advice. Thank you!", name: "Line Gregoire", meta: "1 review · a week ago" },
       ],
     },
     contact: {
@@ -165,10 +165,10 @@ const STR = {
       kicker: "Le bouche à oreille",
       h1: "Les motards",
       h2: "parlent.",
+      googleLabel: "Avis Google",
       quotes: [
-        { text: "Deux garages m'ont dit que le moteur était bon pour la casse. Local Moto l'a fait tourner plus rond qu'au jour de l'achat — pour moins cher que leurs deux devis.", name: "Dan R.", bike: "Triumph Street Twin" },
-        { text: "Ils ont photographié chaque pièce usée, me les ont expliquées une par une, et m'ont rendu les anciennes dans une boîte. Jamais vu ça chez un concessionnaire.", name: "Priya S.", bike: "Yamaha MT-07" },
-        { text: "La vieille CB550 de mon père est revenue mieux que neuve. Ils l'ont traitée comme si c'était la leur. Je ne peux que les recommander.", name: "Marcus T.", bike: "Honda CB550 (refonte moteur)" },
+        { text: "Excellent service ! De vrais experts ! Merci beaucoup !", name: "Mélissa Jérôme", meta: "Guide local · 28 avis · il y a 6 mois" },
+        { text: "Ma moto roule comme un rêve. Service super rapide et un mécanicien très compétent, plein de bons conseils. Merci !", name: "Line Gregoire", meta: "1 avis · il y a une semaine" },
       ],
     },
     contact: {
