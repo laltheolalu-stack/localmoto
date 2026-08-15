@@ -54,6 +54,7 @@ const STR = {
       h1: "Riders",
       h2: "talk.",
       googleLabel: "Google review",
+      reviewsLink: "See all our Google reviews",
       quotes: [
         { text: "Excellent service! True experts! Thank you so much!", name: "Mélissa Jérôme", meta: "Local Guide · 28 reviews · 6 months ago" },
         { text: "My motorcycle is running like a dream. Super fast service and a highly competent mechanic full of great advice. Thank you!", name: "Line Gregoire", meta: "1 review · a week ago" },
@@ -167,6 +168,7 @@ const STR = {
       h1: "Les motards",
       h2: "parlent.",
       googleLabel: "Avis Google",
+      reviewsLink: "Voir tous nos avis Google",
       quotes: [
         { text: "Excellent service ! De vrais experts ! Merci beaucoup !", name: "Mélissa Jérôme", meta: "Guide local · 28 avis · il y a 6 mois" },
         { text: "Ma moto roule comme un rêve. Service super rapide et un mécanicien très compétent, plein de bons conseils. Merci !", name: "Line Gregoire", meta: "1 avis · il y a une semaine" },

@@ -44,6 +44,24 @@ const Testimonials = () => {
             </motion.blockquote>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-12 text-center"
+        >
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=Local+Moto+4273+Laurentian+Autoroute"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="google-reviews-link"
+            className="mono-label inline-flex items-center gap-2 text-[#A1A1AA] hover:text-[#E67E22] border border-white/20 hover:border-[#D35400] px-6 py-3 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
+          >
+            {t.testimonials.reviewsLink} ↗
+          </a>
+        </motion.div>
       </div>
     </section>
   );
