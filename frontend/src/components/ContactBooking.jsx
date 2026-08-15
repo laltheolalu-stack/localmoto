@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { MapPin, Phone, ArrowRight, Loader2 } from "lucide-react";
+import { MapPin, Phone, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { submitBooking, submitEnquiry } from "@/lib/api";
 import TrackedHeading from "@/components/TrackedHeading";
 import { useLang } from "@/lib/site-lang";
@@ -74,6 +74,15 @@ const ContactBooking = () => {
                 <p className="mono-label text-[#52525B] mb-2">{t.contact.phoneLabel}</p>
                 <a href="tel:+15142666607" data-testid="contact-phone" className="text-[#F5F5F5] text-sm hover:text-[#E67E22] transition-colors duration-300">
                   514 266 6607
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <Mail size={20} className="text-[#D35400] mt-1 shrink-0" />
+              <div>
+                <p className="mono-label text-[#52525B] mb-2">{t.contact.emailLabel}</p>
+                <a href="mailto:Pierre.localmoto@gmail.com" data-testid="contact-email" className="text-[#F5F5F5] text-sm hover:text-[#E67E22] transition-colors duration-300">
+                  Pierre.localmoto@gmail.com
                 </a>
               </div>
             </div>
