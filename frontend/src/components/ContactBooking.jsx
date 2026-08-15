@@ -65,6 +65,7 @@ const ContactBooking = () => {
                 <p className="mono-label text-[#52525B] mb-2">{t.contact.workshopLabel}</p>
                 <a href="https://www.google.com/maps/search/?api=1&query=4273+Laurentian+Autoroute" target="_blank" rel="noopener noreferrer" data-testid="contact-address" className="text-[#F5F5F5] text-sm leading-relaxed hover:text-[#E67E22] transition-colors duration-300 block">
                   4273 Laurentian Autoroute
+                  <span className="mono-label text-[#52525B] mt-1 block">{t.contact.directions} ↗</span>
                 </a>
               </div>
             </div>

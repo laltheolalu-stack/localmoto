@@ -11,9 +11,9 @@ const Footer = () => {
           <div>
             <p className="mono-label text-[#52525B] mb-4">{t.footer.findUs}</p>
             <p className="text-[#A1A1AA] text-sm leading-relaxed">
-              <a href="https://www.google.com/maps/search/?api=1&query=4273+Laurentian+Autoroute" target="_blank" rel="noopener noreferrer" data-testid="footer-address" className="hover:text-[#E67E22] transition-colors duration-300">4273 Laurentian Autoroute</a><br />
+              <a href="https://www.google.com/maps/search/?api=1&query=4273+Laurentian+Autoroute" target="_blank" rel="noopener noreferrer" data-testid="footer-address" className="hover:text-[#E67E22] transition-colors duration-300">4273 Laurentian Autoroute ↗</a><br />
               <a href="tel:+15142666607" data-testid="footer-phone" className="hover:text-[#E67E22] transition-colors duration-300">514 266 6607</a><br />
-              <a href="mailto:Pierre.localmoto@gmail.com" data-testid="footer-email" className="hover:text-[#E67E22] transition-colors duration-300">Pierre.localmoto@gmail.com</a>
+              <a href="mailto:Pierre.localmoto@gmail.com" data-testid="footer-email" className="hover:text-[#E67E22] transition-colors duration-300">Pierre.localmoto@gmail.com ↗</a>
             </p>
           </div>
           <div>
