@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
-import { Wrench, Gauge, ClipboardCheck, Disc3 } from "lucide-react";
+import { Wrench, Gauge, Disc3 } from "lucide-react";
 import TrackedHeading from "@/components/TrackedHeading";
 import { useLang } from "@/lib/site-lang";
 
 const TOOLS_IMG =
   "https://images.unsplash.com/photo-1514443031610-8c063c7a9822?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHwzfHxkYXJrJTIwYXRtb3NwaGVyaWMlMjBnYXJhZ2UlMjB0b29sc3xlbnwwfHx8fDE3ODY2NTMyMzV8MA&ixlib=rb-4.1.0&q=85";
 
-const icons = [Wrench, Gauge, ClipboardCheck, Disc3];
+const icons = [Wrench, Gauge, Disc3];
 
 const cardMotion = (i) => ({
   initial: { opacity: 0, y: 40 },
@@ -33,7 +33,7 @@ const Services = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 border border-white/10">
           {t.services.items.map((s, i) => {
             const Icon = icons[i];
             return (

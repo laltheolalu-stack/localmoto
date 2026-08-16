@@ -10,7 +10,7 @@ const STR = {
       line1: "Your bike",
       line2a: "deserves",
       line2b: "better",
-      sub: "A small, independent workshop keeping local riders on the road. Honest repairs, proper servicing, MOT prep and tyres — done right, priced straight.",
+      sub: "A small, independent workshop keeping local riders on the road. Honest repairs, proper servicing and tyres — done right, priced straight.",
       cta1: "Book a service",
       cta2: "See what we do",
       stats: [
@@ -19,17 +19,16 @@ const STR = {
       ],
       scroll: "Scroll",
     },
-    marquee: ["Repairs", "Servicing", "MOT & Inspection", "Tyres", "Diagnostics"],
+    marquee: ["Repairs", "Servicing", "Tyres", "Diagnostics"],
     services: {
       kicker: "What we do",
-      h1: "Four things.",
+      h1: "Three things.",
       h2: "Done right.",
       intro: "No upselling, no jargon, no mystery charges. If it doesn't need doing, we'll tell you. If it does, we'll show you why.",
       items: [
         { n: "01", title: "Repairs & Diagnostics", desc: "From electrical gremlins to engine rebuilds. We find the real fault, explain it in plain English, and fix it properly the first time." },
         { n: "02", title: "Servicing & Maintenance", desc: "Interim and full services, valve clearances, chain and brake care — scheduled around your riding season." },
-        { n: "03", title: "MOT & Inspection", desc: "Pre-MOT checks, MOT arrangement, and honest pre-purchase inspections before you hand over cash for a used bike." },
-        { n: "04", title: "Tyres & Fitting", desc: "Road, sport and classic rubber supplied and fitted with proper balancing. Ride in, ride out the same day." },
+        { n: "03", title: "Tyres & Fitting", desc: "Road, sport and classic rubber supplied and fitted with proper balancing. Ride in, ride out the same day." },
       ],
     },
     manifesto: {
@@ -99,7 +98,6 @@ const STR = {
       services: [
         { value: "Repairs & Diagnostics", label: "Repairs & Diagnostics" },
         { value: "Servicing & Maintenance", label: "Servicing & Maintenance" },
-        { value: "MOT & Inspection", label: "MOT & Inspection" },
         { value: "Tyres & Fitting", label: "Tyres & Fitting" },
       ],
     },
@@ -124,7 +122,7 @@ const STR = {
       line1: "Votre moto",
       line2a: "mérite",
       line2b: "mieux",
-      sub: "Un petit atelier indépendant qui garde les motards locaux sur la route. Réparations honnêtes, entretien soigné, préparation au contrôle technique et pneus — bien faits, au juste prix.",
+      sub: "Un petit atelier indépendant qui garde les motards locaux sur la route. Réparations honnêtes, entretien soigné et pneus — bien faits, au juste prix.",
       cta1: "Réserver un service",
       cta2: "Découvrir nos services",
       stats: [
@@ -133,17 +131,16 @@ const STR = {
       ],
       scroll: "Défiler",
     },
-    marquee: ["Réparations", "Entretien", "Contrôle technique", "Pneus", "Diagnostic"],
+    marquee: ["Réparations", "Entretien", "Pneus", "Diagnostic"],
     services: {
       kicker: "Ce que nous faisons",
-      h1: "Quatre prestations.",
+      h1: "Trois prestations.",
       h2: "Bien faites.",
       intro: "Pas de vente forcée, pas de jargon, pas de frais cachés. Si ce n'est pas nécessaire, on vous le dit. Si ça l'est, on vous montre pourquoi.",
       items: [
         { n: "01", title: "Réparations & Diagnostic", desc: "Des caprices électriques aux refontes moteur. On trouve la vraie panne, on vous l'explique simplement, et on répare correctement du premier coup." },
         { n: "02", title: "Entretien & Révisions", desc: "Révisions intermédiaires et complètes, jeu aux soupapes, chaîne et freins — planifiés selon votre saison de route." },
-        { n: "03", title: "Contrôle technique", desc: "Préparation au contrôle technique, organisation du rendez-vous, et inspections avant-achat honnêtes avant de payer une moto d'occasion." },
-        { n: "04", title: "Pneus & Montage", desc: "Pneus route, sport et classiques fournis et montés avec un équilibrage soigné. Vous arrivez, vous repartez le jour même." },
+        { n: "03", title: "Pneus & Montage", desc: "Pneus route, sport et classiques fournis et montés avec un équilibrage soigné. Vous arrivez, vous repartez le jour même." },
       ],
     },
     manifesto: {
@@ -213,7 +210,6 @@ const STR = {
       services: [
         { value: "Repairs & Diagnostics", label: "Réparations & Diagnostic" },
         { value: "Servicing & Maintenance", label: "Entretien & Révisions" },
-        { value: "MOT & Inspection", label: "Contrôle technique" },
         { value: "Tyres & Fitting", label: "Pneus & Montage" },
       ],
     },
