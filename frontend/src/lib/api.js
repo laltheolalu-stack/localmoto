@@ -18,3 +18,9 @@ export const adminUpdateBooking = (token, id, payload) => axios.patch(`${API}/bo
 export const adminUpdateEnquiry = (token, id, status) => axios.patch(`${API}/enquiries/${id}`, { status }, authHeaders(token));
 export const adminDeleteBooking = (token, id) => axios.delete(`${API}/bookings/${id}`, authHeaders(token));
 export const adminDeleteEnquiry = (token, id) => axios.delete(`${API}/enquiries/${id}`, authHeaders(token));
+export const adminMagicLink = (email, origin, lang) => axios.post(`${API}/auth/magic`, { email, origin, lang });
+export const adminMagicVerify = (token) => axios.post(`${API}/auth/magic/verify`, { token });
+
+export const customerRegister = (name, email, password) => axios.post(`${API}/customers/register`, { name, email, password });
+export const customerLogin = (email, password) => axios.post(`${API}/customers/login`, { email, password });
+export const customerBookings = (token) => axios.get(`${API}/customers/me/bookings`, authHeaders(token));

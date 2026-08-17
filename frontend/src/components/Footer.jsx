@@ -29,6 +29,13 @@ const Footer = () => {
                   {l.label}
                 </button>
               ))}
+              <button
+                data-testid="footer-link-admin"
+                onClick={() => (window.location.href = "/admin")}
+                className="text-left text-[#52525B] text-sm hover:text-[#E67E22] transition-colors duration-300 w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
+              >
+                {t.footer.staffLogin}
+              </button>
             </div>
           </div>
         </div>

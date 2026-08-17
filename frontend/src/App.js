@@ -14,6 +14,7 @@ import Testimonials from "@/components/Testimonials";
 import ContactBooking from "@/components/ContactBooking";
 import Footer from "@/components/Footer";
 import AdminPage from "@/pages/Admin";
+import AccountPage from "@/pages/Account";
 
 const Landing = () => (
   <>
@@ -55,7 +56,9 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/account" element={<AccountPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/magic" element={<AdminPage />} />
           </Routes>
         </BrowserRouter>
       </LangProvider>

@@ -6,6 +6,7 @@ import { Loader2, LogOut, Phone, Mail, Trash2, Bike, CalendarClock, Bell, Globe 
 import {
   adminLogin, adminGoogleSession, adminLogout, adminMe, adminGetBookings, adminGetEnquiries,
   adminUpdateBooking, adminUpdateEnquiry, adminDeleteBooking, adminDeleteEnquiry,
+  adminMagicLink, adminMagicVerify,
 } from "@/lib/api";
 
 const TOKEN_KEY = "lm_admin_token";
@@ -52,6 +53,10 @@ const STR = {
     appointment: "Appointment date",
     reminderAuto: "Reminder email goes out the day before",
     reminderSent: "Reminder sent ✓",
+    magicButton: "Email me a sign-in link",
+    magicSent: "If that email is registered, a sign-in link is on its way.",
+    magicNeedEmail: "Enter your email above first",
+    magicFailed: "That sign-in link is invalid or expired — request a new one.",
     newCount: (n) => `${n} new`,
   },
   fr: {
@@ -94,6 +99,10 @@ const STR = {
     appointment: "Date du rendez-vous",
     reminderAuto: "E-mail de rappel envoyé automatiquement la veille",
     reminderSent: "Rappel envoyé ✓",
+    magicButton: "M'envoyer un lien de connexion",
+    magicSent: "Si cet e-mail est enregistré, un lien de connexion est en route.",
+    magicNeedEmail: "Entrez d'abord votre e-mail ci-dessus",
+    magicFailed: "Ce lien de connexion est invalide ou expiré — demandez-en un nouveau.",
     newCount: (n) => `${n} nouveaux`,
   },
 };
@@ -157,6 +166,9 @@ const AdminPage = () => {
   const location = useLocation();
   const isOAuthCallback = location.hash?.includes("session_id=");
   const oauthHandled = useRef(false);
+  const magicToken = new URLSearchParams(location.search).get("token");
+  const isMagicCallback = location.pathname.includes("/admin/magic") && !!magicToken;
+  const magicHandled = useRef(false);
 
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
   const [checking, setChecking] = useState(!!localStorage.getItem(TOKEN_KEY));
@@ -166,6 +178,8 @@ const AdminPage = () => {
   const [error, setError] = useState("");
   const [oauthError, setOauthError] = useState("");
   const [oauthProcessing, setOauthProcessing] = useState(isOAuthCallback);
+  const [magicProcessing, setMagicProcessing] = useState(isMagicCallback);
+  const [magicInfo, setMagicInfo] = useState("");
   const [sending, setSending] = useState(false);
   const [tab, setTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
@@ -203,6 +217,24 @@ const AdminPage = () => {
       setLoading(false);
     }
   }, [logout]);
+
+  useEffect(() => {
+    if (!isMagicCallback || magicHandled.current) return;
+    magicHandled.current = true;
+    adminMagicVerify(magicToken)
+      .then(({ data }) => {
+        localStorage.setItem(TOKEN_KEY, data.token);
+        window.history.replaceState(null, "", "/admin");
+        setToken(data.token);
+      })
+      .catch((err) => {
+        const detail = err.response?.data?.detail;
+        setError(typeof detail === "string" ? detail : t.magicFailed);
+        window.history.replaceState(null, "", "/admin");
+      })
+      .finally(() => setMagicProcessing(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMagicCallback, magicToken]);
 
   useEffect(() => {
     if (!isOAuthCallback || oauthHandled.current) return;
@@ -260,6 +292,25 @@ const AdminPage = () => {
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
+  const handleMagicLink = async () => {
+    if (!email) {
+      setError(t.magicNeedEmail);
+      return;
+    }
+    setSending(true);
+    setError("");
+    setMagicInfo("");
+    try {
+      await adminMagicLink(email, window.location.origin, lang);
+      setMagicInfo(t.magicSent);
+    } catch (err) {
+      if (err.response) setMagicInfo(t.magicSent);
+      else setError(t.magicFailed);
+    } finally {
+      setSending(false);
+    }
+  };
+
   const setStatus = async (kind, id, status) => {
     try {
       if (kind === "booking") {
@@ -307,7 +358,7 @@ const AdminPage = () => {
     setTimeout(() => document.getElementById(`req-${n.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
   };
 
-  if (oauthProcessing || checking) {
+  if (oauthProcessing || magicProcessing || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]" data-testid="admin-loading">
         <Loader2 size={28} className="animate-spin text-[#D35400]" />
@@ -361,6 +412,15 @@ const AdminPage = () => {
             <GoogleMark />
             {t.google}
           </button>
+          <button
+            data-testid="admin-magic-link"
+            onClick={handleMagicLink}
+            disabled={sending}
+            className="mono-label w-full mt-3 text-[#A1A1AA] hover:text-[#E67E22] border border-white/10 hover:border-[#D35400] px-4 py-3 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400] disabled:opacity-60"
+          >
+            {t.magicButton}
+          </button>
+          {magicInfo && <p className="text-emerald-400 text-sm mt-4" data-testid="admin-magic-sent">{magicInfo}</p>}
           {oauthError && <p className="text-red-400 text-sm mt-4" data-testid="admin-google-error">{oauthError}</p>}
           <p className="text-[#52525B] text-xs mt-4 leading-relaxed">{t.googleNote}</p>
 

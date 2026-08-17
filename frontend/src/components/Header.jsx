@@ -78,6 +78,13 @@ const Header = () => {
               {l.label}
             </button>
           ))}
+          <button
+            data-testid="nav-login"
+            onClick={() => (window.location.href = "/account")}
+            className="mono-label text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]"
+          >
+            {t.nav.login}
+          </button>
           <LangButton testid="site-lang-toggle" />
           <button
             data-testid="nav-book-cta"
@@ -113,6 +120,13 @@ const Header = () => {
               {l.label}
             </button>
           ))}
+          <button
+            data-testid="mobile-nav-login"
+            onClick={() => (window.location.href = "/account")}
+            className="mono-label text-left text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors duration-300"
+          >
+            {t.nav.login}
+          </button>
           <button
             data-testid="mobile-nav-book-cta"
             onClick={() => go("#contact")}

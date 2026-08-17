@@ -34,6 +34,7 @@ api_router = APIRouter(prefix="/api")
 JWT_ALGORITHM = "HS256"
 LOCKOUT_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
+MAGIC_MINUTES = 15
 EMERGENT_SESSION_DATA_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
 SHOP_TZ = ZoneInfo("America/Montreal")
 
@@ -229,6 +230,10 @@ _CUSTOMER_COPY = {
         "reminder_subject": "Reminder: your Local Moto booking is tomorrow",
         "reminder_title": "Booking reminder",
         "reminder_intro": "Hi {name} — a quick reminder that your {bike} is booked in with us tomorrow, {date}. If anything has changed, just reply to this email or call 514 266 6607.",
+        "magic_subject": "Your Local Moto admin sign-in link",
+        "magic_title": "Admin sign-in",
+        "magic_intro": "Click the button below to sign in to the Local Moto dashboard. This link is valid for 15 minutes and can only be used once.",
+        "magic_cta": "Sign in to the admin",
     },
     "fr": {
         "booking_subject": "Votre demande de réservation est bien reçue — Local Moto",
@@ -243,6 +248,10 @@ _CUSTOMER_COPY = {
         "reminder_subject": "Rappel : votre rendez-vous Local Moto, c'est demain",
         "reminder_title": "Rappel de rendez-vous",
         "reminder_intro": "Bonjour {name} — petit rappel : votre {bike} est attendue à l'atelier demain, {date}. Si quelque chose a changé, répondez à cet e-mail ou appelez le 514 266 6607.",
+        "magic_subject": "Votre lien de connexion — Local Moto",
+        "magic_title": "Connexion à l'admin",
+        "magic_intro": "Cliquez sur le bouton ci-dessous pour vous connecter au tableau de bord Local Moto. Ce lien est valable 15 minutes et ne peut être utilisé qu'une seule fois.",
+        "magic_cta": "Se connecter à l'admin",
     },
 }
 
@@ -276,6 +285,19 @@ def _reminder_email(name: str, bike: str, date_iso: str, lang: str = "en") -> tu
         '</td></tr></table>'
     )
     return copy["reminder_subject"], html
+
+
+def _magic_email(link: str, lang: str = "en") -> tuple:
+    copy = _CUSTOMER_COPY.get(lang, _CUSTOMER_COPY["en"])
+    html = (
+        '<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif">'
+        f'<h2 style="margin:0 0 16px;font-family:Arial,sans-serif">{escape(copy["magic_title"])}</h2>'
+        f'<p style="font-family:Arial,sans-serif;font-size:14px;color:#111">{escape(copy["magic_intro"])}</p>'
+        f'<p style="margin:24px 0"><a href="{escape(link)}" style="background:#D35400;color:#ffffff;padding:12px 24px;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:bold">{escape(copy["magic_cta"])}</a></p>'
+        f'<p style="font-size:12px;color:#888;margin-top:24px">{escape(copy["sent_by"])} {escape(EMAIL_FROM_NAME)}. {escape(copy["footer"])}</p>'
+        '</td></tr></table>'
+    )
+    return copy["magic_subject"], html
 
 
 async def notify_customer(to: str, subject: str, html: str) -> None:
@@ -327,11 +349,11 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def create_access_token(user_id: str, email: str) -> str:
+def create_access_token(user_id: str, email: str, token_type: str = "access") -> str:
     payload = {
         "sub": user_id,
         "email": email,
-        "type": "access",
+        "type": token_type,
         "exp": datetime.now(timezone.utc) + timedelta(hours=12),
     }
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=JWT_ALGORITHM)
@@ -339,6 +361,15 @@ def create_access_token(user_id: str, email: str) -> str:
 
 def public_user(user: dict) -> dict:
     return {"id": user["id"], "email": user["email"], "name": user.get("name", "Admin"), "role": user.get("role", "admin")}
+
+
+def _decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 
 async def get_current_user(request: Request) -> dict:
@@ -349,10 +380,14 @@ async def get_current_user(request: Request) -> dict:
 
     try:
         payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Invalid token")
         user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
+    except HTTPException:
+        raise
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
@@ -371,6 +406,20 @@ async def get_current_user(request: Request) -> dict:
         if user:
             return user
     raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def get_current_customer(request: Request) -> dict:
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header[7:] if auth_header.startswith("Bearer ") else None
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    payload = _decode_token(token)
+    if payload.get("type") != "customer":
+        raise HTTPException(status_code=401, detail="Invalid token")
+    customer = await db.customers.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
+    if not customer:
+        raise HTTPException(status_code=401, detail="Account not found")
+    return customer
 
 
 async def seed_admin():
@@ -458,6 +507,22 @@ class GoogleSessionRequest(BaseModel):
     session_id: str = Field(min_length=1)
 
 
+class MagicLinkRequest(BaseModel):
+    email: EmailStr
+    origin: str = Field(min_length=8, max_length=200)
+    lang: Optional[str] = Field(default="en", max_length=5)
+
+
+class MagicVerifyRequest(BaseModel):
+    token: str = Field(min_length=16, max_length=128)
+
+
+class CustomerRegister(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=128)
+
+
 class StatusUpdate(BaseModel):
     status: str = Field(pattern="^(new|contacted|done)$")
 
@@ -543,6 +608,98 @@ async def logout(request: Request, response: Response):
 @api_router.get("/auth/me")
 async def me(user: dict = Depends(get_current_user)):
     return user
+
+
+@api_router.post("/auth/magic")
+async def request_magic_link(payload: MagicLinkRequest):
+    email = payload.email.lower()
+    if email in admin_emails():
+        one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+        recent = await db.magic_tokens.count_documents({"email": email, "created_at": {"$gt": one_hour_ago}})
+        if recent >= 5:
+            raise HTTPException(status_code=429, detail="Too many sign-in links requested. Try again later.")
+        origin = payload.origin.rstrip("/")
+        parsed = urlparse(origin)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username:
+            raise HTTPException(status_code=400, detail="Invalid origin")
+        token = uuid.uuid4().hex + uuid.uuid4().hex
+        await db.magic_tokens.insert_one({
+            "token": token,
+            "email": email,
+            "used": False,
+            "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=MAGIC_MINUTES)).isoformat(),
+            "created_at": now_iso(),
+        })
+        link = f"{origin}/admin/magic?token={token}"
+        subject, html = _magic_email(link, payload.lang or "en")
+        asyncio.create_task(notify_customer(email, subject, html))
+    return {"message": "If that email is registered, a sign-in link is on its way."}
+
+
+@api_router.post("/auth/magic/verify")
+async def verify_magic_link(payload: MagicVerifyRequest, response: Response):
+    doc = await db.magic_tokens.find_one({"token": payload.token})
+    if not doc or doc.get("used"):
+        raise HTTPException(status_code=401, detail="This sign-in link is invalid or already used.")
+    expires_at = datetime.fromisoformat(doc["expires_at"])
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="This sign-in link has expired.")
+    await db.magic_tokens.update_one({"token": payload.token}, {"$set": {"used": True}})
+    user = await db.users.find_one({"email": doc["email"]})
+    if not user:
+        raise HTTPException(status_code=401, detail="Account not found")
+    session_token = uuid.uuid4().hex + uuid.uuid4().hex
+    await db.user_sessions.delete_many({"user_id": user["id"]})
+    await db.user_sessions.insert_one({
+        "user_id": user["id"],
+        "session_token": session_token,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+        "created_at": now_iso(),
+    })
+    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
+    return {"token": session_token, "user": public_user(user)}
+
+
+@api_router.post("/customers/register", status_code=201)
+async def customer_register(payload: CustomerRegister):
+    email = payload.email.lower()
+    if email in admin_emails():
+        raise HTTPException(status_code=400, detail="Please use the staff login.")
+    existing = await db.customers.find_one({"email": {"$regex": f"^{re.escape(email)}$", "$options": "i"}})
+    if existing:
+        raise HTTPException(status_code=409, detail="An account already exists for this email.")
+    customer = {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "name": payload.name,
+        "password_hash": hash_password(payload.password),
+        "created_at": now_iso(),
+    }
+    await db.customers.insert_one(customer)
+    token = create_access_token(customer["id"], email, "customer")
+    return {"token": token, "user": {"id": customer["id"], "email": email, "name": customer["name"]}}
+
+
+@api_router.post("/customers/login")
+async def customer_login(payload: LoginRequest):
+    email = payload.email.lower()
+    customer = await db.customers.find_one({"email": {"$regex": f"^{re.escape(email)}$", "$options": "i"}})
+    if not customer or not verify_password(payload.password, customer["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = create_access_token(customer["id"], customer["email"], "customer")
+    return {"token": token, "user": {"id": customer["id"], "email": customer["email"], "name": customer["name"]}}
+
+
+@api_router.get("/customers/me/bookings")
+async def customer_bookings(customer: dict = Depends(get_current_customer)):
+    docs = await db.bookings.find(
+        {"email": {"$regex": f"^{re.escape(customer['email'])}$", "$options": "i"}},
+        {"_id": 0, "budget_range": 0, "project_vision": 0},
+    ).sort("created_at", -1).to_list(100)
+    for d in docs:
+        d.setdefault("status", "new")
+        d.setdefault("appointment_date", None)
+    return docs
 
 
 @api_router.post("/enquiries", response_model=Enquiry, status_code=201)
@@ -663,7 +820,9 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup():
     await db.users.create_index("email", unique=True)
+    await db.customers.create_index("email", unique=True)
     await db.login_attempts.create_index("identifier")
+    await db.magic_tokens.create_index("token", unique=True)
     await db.user_sessions.create_index("session_token")
     await seed_admin()
     asyncio.create_task(reminder_loop())
