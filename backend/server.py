@@ -440,9 +440,10 @@ async def seed_admin():
         elif not existing.get("password_hash") or not verify_password(admin_password, existing["password_hash"]):
             await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(admin_password)}})
             logger.info("Admin password updated from env: %s", email)
-    removed = await db.users.delete_many({"role": "admin", "email": {"$nin": allowed}})
-    if removed.deleted_count:
-        logger.info("Removed %d stale admin user(s)", removed.deleted_count)
+    stale = await db.users.find({"role": "admin", "email": {"$nin": allowed}}, {"_id": 0, "email": 1}).to_list(50)
+    if stale:
+        logger.warning("Stale admin accounts present (not in ADMIN_EMAILS), left untouched — remove manually if needed: %s",
+                       ", ".join(u["email"] for u in stale))
 
 
 class Enquiry(BaseModel):
