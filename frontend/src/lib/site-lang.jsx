@@ -284,7 +284,7 @@ const STR = {
 const LangCtx = createContext(null);
 
 export const LangProvider = ({ children }) => {
-  const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY) || "en");
+  const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY) || "fr");
   const toggleLang = () => {
     const next = lang === "en" ? "fr" : "en";
     setLang(next);

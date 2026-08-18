@@ -186,7 +186,7 @@ const AdminPage = () => {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
-  const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY) || "en");
+  const [lang, setLang] = useState(() => localStorage.getItem(LANG_KEY) || "fr");
 
   const t = STR[lang];
 
