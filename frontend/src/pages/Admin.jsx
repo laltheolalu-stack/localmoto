@@ -67,7 +67,7 @@ const STR = {
     signingIn: "Connexion…",
     or: "ou",
     google: "Continuer avec Google",
-    googleNote: "La connexion Google ne fonctionne qu'avec l'adresse e-mail admin enregistrée de l'atelier.",
+    googleNote: "La connexion Google est réservée aux adresses e-mail admin enregistrées.",
     backHome: "← Retour au site",
     bookings: "Réservations",
     enquiries: "Demandes",
