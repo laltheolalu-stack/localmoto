@@ -166,7 +166,7 @@ const AccountPage = () => {
           </div>
           <button data-testid="account-logout-button" onClick={logout}
             className="mono-label text-[#A1A1AA] hover:text-[#F5F5F5] transition-colors duration-300 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D35400]">
-            <LogOut size={14} /> {t.account.logout}
+            <LogOut size={14} /> <span className="hidden sm:inline">{t.account.logout}</span>
           </button>
         </div>
       </header>

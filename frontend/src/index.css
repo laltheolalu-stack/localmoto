@@ -104,7 +104,7 @@
         opacity: 0.55;
     }
     .input-industrial {
-        @apply w-full bg-transparent border border-white/20 rounded-none px-4 py-3 text-sm text-[#F5F5F5] placeholder:text-[#52525B] transition-colors duration-300 focus:border-[#D35400] focus:outline-none focus:ring-0;
+        @apply w-full bg-transparent border border-white/20 rounded-none px-4 py-3 text-base text-[#F5F5F5] placeholder:text-[#52525B] transition-colors duration-300 focus:border-[#D35400] focus:outline-none focus:ring-0;
     }
     .btn-accent {
         @apply inline-flex items-center justify-center gap-2 bg-[#D35400] text-[#F5F5F5] font-semibold text-sm tracking-wide uppercase px-8 py-4 transition-colors duration-300 hover:bg-[#E67E22] focus-visible:ring-2 focus-visible:ring-[#D35400] focus-visible:outline-none;
